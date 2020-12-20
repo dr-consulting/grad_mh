@@ -2,5 +2,7 @@
 *.jpg
 *.jpeg
 *.rda
+*.Rda
 *.rdata
 *.RData
+*.sav

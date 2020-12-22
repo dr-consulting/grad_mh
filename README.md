@@ -1,2 +1,8 @@
-This is the website to start from when attempting to get the raw SAMHSA data sets
-https://www.datafiles.samhsa.gov/info/browse-studies-nid3454
+# NSDUH Notes
+- NSDUH data were retrieved from: https://www.datafiles.samhsa.gov/info/browse-studies-nid3454
+- In 2015, the education level variable changed slightly. The 2008 to 2014 surveys included the `IREDUC2` and `EDUCCAT2` variables. From 2015 through 2019 the education variable changed to `IREDUHIGHST2`. In addition to the name change, missing education levels were imputed in these later surveys. Both `IREDUC2` and `IREDUHIGHST2` use a similar 1-11 scale to record valid reponses. They are not equivalent however. Response option 11, which is used to identify a subpopulation of comparably educated U.S. adults is worded differently: 
+    - 2008-2014 version: "Senior/16th year or Grad/Prof School (or higher)"
+    - 2015-2019 version: "College graduate or higher"
+- The primary "past-year" depression variable from the NSDUH was `AMDEYR` - which measured the occurrence of a major depressive episode in the past year. Directly from the 2015 codebook (p. 419): 
+
+>The following variable, AMDELT, identifies an adult as having a major depressive episode (MDE) in their lifetime and AMDEYR identifies an adult as having MDE in the prior year. Due to questionnaire changes in 2008, these MDE variables are notdirectly comparable to MDE variables from 2004 to 2008. Adjusted lifetime and past year MDE variables (AJAMDELT and AJAMDEYR) were developed to allow comparisons of adult MDE data across years beginning with 2005 and continuing through 2008 and later years

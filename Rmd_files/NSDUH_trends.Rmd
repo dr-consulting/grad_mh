@@ -1,0 +1,68 @@
+---
+title: "NSDUH Exploratory Analyses: 2008 to 2019"
+runningheader: "DeYoung et al. 2020" # only for pdf output
+subtitle: "Preliminary Examination of NSDUH Outcomes" # only for html output
+author: "Matthew Barstead, Ph.D."
+date: "`r Sys.Date()`"
+output:
+  tufte::tufte_handout:
+    includes: 
+      in_header: preamble.tex
+    highlight: tango
+  tufte::tufte_html: default
+  tufte::tufte_book:
+    highlight: tango
+  pdf_document:
+    includes: 
+      in_header: preamble.tex
+---
+
+```{r setup, include=FALSE}
+source('~/github/ATNL/grad_mh/project_config.R')
+sapply(list.files(R_DIR, full.names = TRUE), source)
+load('{DATA_DIR}/NSDUH/nsduh_study_data.RData' %>% glue())
+```
+
+# Overview
+The reason that data from the National Survey on Drug Use and Health^[NSDUH data were retrieved from: https://www.datafiles.samhsa.gov/info/browse-studies-nid3454] have been incorporated into the present report is to establish a relevant baseline for changes in mental health from 2008 to 2019. The goal is to use these values as our best estimate of change in mental health prevalence in both U.S. adults and U.S. adults with a college degree. 
+
+# Any Mental Illness
+
+In the NSDUH data, a model is used to predict the presence/absence of mental illness, excluding substance use disorders. Raw and weighted changes are displayed below for _all adults_. 
+
+```{r, echo=FALSE, message=FALSE, fig.height=4, fig.cap="Raw and Weighted Rates of Mental Illness among U.S. Adults"}
+plot_list <- create_nsduh_trend_plots(
+  nsduh_study_df, 
+  xvar = 'qtr_date', 
+  yvar = 'anymi_12mos', 
+  yvar_hits = 1, 
+  weight_var = 'weights', 
+  mask_var = 'adult_mask', 
+  y_breaks = seq(0, .3, by = .05)
+)
+
+cowplot::plot_grid(plotlist = plot_list, ncol = 1)
+```
+Figure 2 presents the same trends but for _adults with a college degree_. An important note about these data. Measurement of education levels changed slightly in 2015. That year, and going forward, the highest education level recorded was: "College graduate or higher". The earlier surveys, however, recorded the highest education level as "Senior/16th year or Grad/Prof School (or higher)". I have not been able to find any measures that would make these two measures more equivalent. In both, sets of surveys these two similar, but not equivalent, maximum education levels were used to identify college graduates in subsequent computed variables in the data sets. We are essentially replicating the same logic recommended in both sets of surveys to identify U.S. adult, college graduates, which is likely the best that can be done here.
+
+```{r, echo=FALSE, message=FALSE, fig.height=4, fig.cap="Raw and Weighted Rates of Mental Illness among U.S. Adults with a college degree"}
+plot_list <- create_nsduh_trend_plots(
+  nsduh_study_df, 
+  xvar = 'qtr_date', 
+  yvar = 'anymi_12mos', 
+  yvar_hits = 1, 
+  weight_var = 'weights', 
+  mask_var = 'college_adult_mask', 
+  y_breaks = seq(0, .3, by = .05)
+)
+
+cowplot::plot_grid(plotlist = plot_list, ncol = 1)
+```
+
+
+
+
+```{r bib, include=FALSE}
+# create a bib file for the R packages used in this document
+# knitr::write_bib(c('base', 'rmarkdown'), file = 'skeleton.bib')
+```

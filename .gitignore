@@ -6,3 +6,8 @@
 *.rdata
 *.RData
 *.sav
+*.pdf
+*.PDF
+*.log
+*.html
+*.csv

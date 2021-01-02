@@ -306,15 +306,6 @@ NQ47:
         2: Male
         3: Transgender
 
-NQ48: 
-    study_name: Q48_sexuality
-    text: What is your sexual orientation
-    responses: 
-        1: Heterosexual
-        2: Gay/Lesbian
-        3: Bisexual
-        4: Unsure
-
 NQ51: 
     study_name: Q51_classyear
     text: What is your year in school

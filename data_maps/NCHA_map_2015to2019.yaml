@@ -298,22 +298,30 @@ NQ46:
     study_name: Q46_age
     text: How old are you
 
-NQ47: 
-    study_name: Q47_gender
-    text: what is your gender
+RNQ47A: 
+    study_name: Q47_sex
+    text: What sex were you assigned at birth, such as on an original birth certificate
     responses: 
         1: Female
         2: Male
-        3: Transgender
 
-NQ48: 
-    study_name: Q48_sexuality
-    text: What is your sexual orientation
+RNQ47B: 
+    study_name: Q47_trans
+    text: Do you identify as transgender
     responses: 
-        1: Heterosexual
-        2: Gay/Lesbian
-        3: Bisexual
-        4: Unsure
+        1: "No"
+        2: "Yes"
+
+RNQ47C:
+    study_name: Q47_identity
+    text: Which term do you use to describe your gender identity
+    responses: 
+        1: Woman
+        2: Man
+        3: Trans woman
+        4: Trans man
+        5: Genderqueer
+        6: Other
 
 NQ51: 
     study_name: Q51_classyear
@@ -384,14 +392,14 @@ STUDY:
     study_name: survey_period
     text: NCHA Survey Period
     responses: 
-        24: Fall 2011
-        25: Spring 2012
-        26: Fall 2012
-        27: Spring 2013
-        28: Fall 2013
-        29: Spring 2014
-        30: Fall 2014
-        31: Spring 2015
+        32: Fall 2015
+        33: Spring 2016
+        34: Fall 2016
+        35: Spring 2017
+        36: Fall 2017
+        37: Spring 2018
+        38: Fall 2018
+        39: Spring 2019
 
 pwno: 
     study_name: survey_method

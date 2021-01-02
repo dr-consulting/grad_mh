@@ -72,11 +72,12 @@ create_study_datasets <- function(df, map_filepath) {
 #' @param recode_names a character vector of names derived from the data_map in pre-processing steps that take place in 
 #' the parent function. These are the fields that need to be recoded in some fashion. 
 #' 
-#' @param study_names a character vectory of names derived from the data_map in pre-processing steps that take place in
+#' @param study_names a character vector of names derived from the data_map in pre-processing steps that take place in
 #' the parent function. These are all of the fields that should be returned - whether they are recoded and renamed or 
 #' just renamed according to the data_map. 
 #' 
-#' @seealso create_study_datasets  
+#' @seealso create_study_datasets 
+
 helper_recode_func <- function(df, data_map, recode_names, study_names) {
     # Apply the recodes as appropriate from the data map
     df <- df %>% 

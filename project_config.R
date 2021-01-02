@@ -17,3 +17,7 @@ NSDUH_MISSING_CODES <- c(85, 89, 94, 97, 98, 99)
 
 base_palette <- c(line = '#426EBD', 
                   fill = '#F7FBFF')
+
+analogous_palette <- c(blue = '#426EBD', 
+                       purple = "#6942bd", 
+                       green = "#42bd92")

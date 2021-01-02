@@ -6,13 +6,13 @@ sapply(list.files(R_DIR, full.names = TRUE), source)
 load_RData_files('~/github/ATNL/grad_mh/data/NSDUH')
 
 # Process and concatenate original and study_dfs
-NSDUH_2008_df_list <- create_study_datasets(PUF2008_090718, '{MAPS_DIR}/NSDUH_map_2008to2014.yaml' %>% glue())
-NSDUH_2009_df_list <- create_study_datasets(PUF2009_090718, '{MAPS_DIR}/NSDUH_map_2008to2014.yaml' %>% glue())
-NSDUH_2010_df_list <- create_study_datasets(PUF2010_090718, '{MAPS_DIR}/NSDUH_map_2008to2014.yaml' %>% glue())
-NSDUH_2011_df_list <- create_study_datasets(PUF2011_090718, '{MAPS_DIR}/NSDUH_map_2008to2014.yaml' %>% glue())
-NSDUH_2012_df_list <- create_study_datasets(PUF2012_090718, '{MAPS_DIR}/NSDUH_map_2008to2014.yaml' %>% glue())
-NSDUH_2013_df_list <- create_study_datasets(PUF2013_090718, '{MAPS_DIR}/NSDUH_map_2008to2014.yaml' %>% glue())
-NSDUH_2014_df_list <- create_study_datasets(PUF2014_090718, '{MAPS_DIR}/NSDUH_map_2008to2014.yaml' %>% glue())
+NSDUH_2008_df_list <- create_study_datasets(PUF2008_090718, '{MAPS_DIR}/NSDUH_map_2008.yaml' %>% glue())
+NSDUH_2009_df_list <- create_study_datasets(PUF2009_090718, '{MAPS_DIR}/NSDUH_map_2009to2014.yaml' %>% glue())
+NSDUH_2010_df_list <- create_study_datasets(PUF2010_090718, '{MAPS_DIR}/NSDUH_map_2009to2014.yaml' %>% glue())
+NSDUH_2011_df_list <- create_study_datasets(PUF2011_090718, '{MAPS_DIR}/NSDUH_map_2009to2014.yaml' %>% glue())
+NSDUH_2012_df_list <- create_study_datasets(PUF2012_090718, '{MAPS_DIR}/NSDUH_map_2009to2014.yaml' %>% glue())
+NSDUH_2013_df_list <- create_study_datasets(PUF2013_090718, '{MAPS_DIR}/NSDUH_map_2009to2014.yaml' %>% glue())
+NSDUH_2014_df_list <- create_study_datasets(PUF2014_090718, '{MAPS_DIR}/NSDUH_map_2009to2014.yaml' %>% glue())
 NSDUH_2015_df_list <- create_study_datasets(PUF2015_021518, '{MAPS_DIR}/NSDUH_map_2015to2019.yaml' %>% glue())
 NSDUH_2016_df_list <- create_study_datasets(PUF2016_022818, '{MAPS_DIR}/NSDUH_map_2015to2019.yaml' %>% glue())
 NSDUH_2017_df_list <- create_study_datasets(PUF2017_100918, '{MAPS_DIR}/NSDUH_map_2015to2019.yaml' %>% glue())
@@ -34,7 +34,7 @@ for(i in seq_along(nsduh_dfs)) {
 # Values outside this range are expected to be NAs
 
 # The age variable is constructed in the same way in both version of the surveys (pre-2015 and after)
-ages <- yaml::read_yaml('{MAPS_DIR}/NSDUH_map_2008to2014.yaml' %>% glue())[['AGE2']][['responses']] %>% 
+ages <- yaml::read_yaml('{MAPS_DIR}/NSDUH_map_2009to2014.yaml' %>% glue())[['AGE2']][['responses']] %>% 
     unlist()
 valid_ages <- ages[7:17]
 invalid_ages <- ages[-7:-17]

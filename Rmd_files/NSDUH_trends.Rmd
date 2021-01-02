@@ -1,5 +1,5 @@
 ---
-title: "NSDUH Exploratory Analyses: 2008 to 2019"
+title: "NSDUH Variables and Trends: 2008 to 2019"
 runningheader: "DeYoung et al. 2020" # only for pdf output
 subtitle: "Preliminary Examination of NSDUH Outcomes" # only for html output
 author: "Matthew Barstead, Ph.D."
@@ -15,6 +15,8 @@ output:
   pdf_document:
     includes: 
       in_header: preamble.tex
+bibliography: NSDUH_trends.bib
+nocite: '@*'
 ---
 
 ```{r setup, include=FALSE}
@@ -24,14 +26,48 @@ load('{DATA_DIR}/NSDUH/nsduh_study_data.RData' %>% glue())
 ```
 
 # Overview
-The reason that data from the National Survey on Drug Use and Health^[NSDUH data were retrieved from: https://www.datafiles.samhsa.gov/info/browse-studies-nid3454] have been incorporated into the present report is to establish a relevant baseline for changes in mental health from 2008 to 2019. The goal is to use these values as our best estimate of change in mental health prevalence in both U.S. adults and U.S. adults with a college degree. 
+
+The reason that data from the National Survey on Drug Use and Health^[NSDUH data were retrieved from: https://www.datafiles.samhsa.gov/info/browse-studies-nid3454] have been incorporated into the present report is to establish a relevant baseline for changes in mental health from 2008 to 2019. The goal is to use these values as our best estimate of change in mental health prevalence in populations of both U.S. adults and U.S. adults with a college degree. This document explores the basic properties and trends of four measures of mental health in these two populations: any mental illness in the past year, one or more major depressive episodes in the past year, seriously considering suicide in the past year, and attempting suicide in the past year. 
+
+```{marginfigure}
+Measurement of education levels changed slightly in 2015. That year, and going forward, the highest education level recorded was: "College graduate or higher". The earlier surveys, however, recorded the highest education level as "Senior/16th year or Grad/Prof School (or higher)". In both sets of surveys these two similar, but not equivalent, maximum education levels were used to identify college graduates in subsequent computed variables. We are effectively adopting the same logic with our approach; if you are an adult and responded that your education level was the highest category available, you would be considered an adult with a college degree for the purposes of our analyses.
+```
 
 # Any Mental Illness
 
-In the NSDUH data, a model is used to predict the presence/absence of mental illness, excluding substance use disorders. Raw and weighted changes are displayed below for _all adults_. 
+The variable that measures the presence/absence of mental illness is the result of a prediction score generated from a logistic regression model. From the 2008 Codebook (p. i-6): 
 
-```{r, echo=FALSE, message=FALSE, fig.height=4, fig.cap="Raw and Weighted Rates of Mental Illness among U.S. Adults"}
-plot_list <- create_nsduh_trend_plots(
+>Since 2008, a statistical model has been employed to predict whether an adult NSDUH respondent had serious, moderate, mild, or no mental illness based on his or her answers to certain NSDUH questions. For the 2012 NSDUH, this model was revised to produce more accurate estimates. This revised 2012 model was used to produce the mental illness estimates for 2012 to 2018. In addition, comparable estimates were recomputed for 2008 through 2011.
+
+As described below, a model is used to generate a predicted score for each observation. Whether a respondent has a mental illness is then determined using a cutoff value (NSDUH 2018 Codebook, p. 423). The manner in which the cutoff target is determined does not appear to be described anywhere in the codebook.
+
+>The following variable, AMIYR_U, is an indicator for Any Mental Illness (AMI) based on the 2012 revised predicted probability of SMI (SMIPP_U). If SMIPP_U is greater than or equal to a specified cutoff point (0.0192519810) then AMIYR_U=1, and if SMIPP_U is less than the cutoff point then AMIYR_U=0. This indicator based on the 2012 model is not comparable with the indicator based on the 2008 model. AMI is defined as having Serious, Moderate, or Mild Mental Illness. 
+
+The model for generating the predictions, a logistic regression, is recreated below (NSDUH 2018 Codebook, p. E-12) for convenience:
+
+$$
+log(\frac{p_i}{1-p_i}) = -5.973 +0.087X_k + 0.339X_w +1.955X_s + 1.123X_m + 0.106X_a
+$$
+With the following mappings for the $X$ variables: 
+
+- $X_k$ - a re-coded variable (`WSPDSC2`) derived from the Kessler 6. 
+
+>Using the worst month total score (K6SCMAX), the alternative worst month total score (WSPDSC2) is coded 0 when K6SCMAX has a value from 0 to 7, and WSPDSC2 is assigned a value of 1 to 17 when K6SCMAX has a corresponding value of 8 to 24
+
+- $X_w$ - a re-coded variable (`WHODASC3`) derived from the World Health Organization's Disability Assessment Schedule (WHODAS). 
+
+>An alternative WHODAS total score (WHODASC3) was created to indicate the number of daily activities in which a respondent had moderate or severe difficulty performing or did not perform due to problems with emotions, nerves, or mental health. Each of the eight variables created from WHODAS items shown above was transformed into values of 0 or 1 so thatresponses indicating "Moderate difficulty" or "Severedifficulty" were coded 1 and responses indicating "Mild difficulty" or "No difficulty" were coded 0. If a fifth category of "Not applicable" was available and selected (see above for an example of a fifth question), then another question was asked as to whether respondents' emotions, nerves, or mental health caused them to be unable to work or go to school. A "Yes" response was coded 1 and a "No" response was coded 0. The transformed scale values were summed across the eight WHODAS activities to arrive at a value ranging between 0 and 8.
+
+- $X_s$ - serious thoughts of suicide in the past year. (See below - this is our measure of suicidal thoughts/ideation)
+
+- $X_m$ - major depressive episode in the past year. (See below - this is our measure of depression)
+
+- $X_a$ - a re-coded age variable that is not available in the public use data set (`AGE1830`).
+
+A quick summary of the variable formation is that, using a cutoff point, individuals are classified by their model-derived scores as either having or not having experienced a mental illness in the past year^[My guess is that the variable they used to create the model was zero-inflated. I see nothing in their model that accounts for the zero-inflation, and it could be one explanation for the relatively low cut point applied to the predicted probability of having a serious mental illness: $p_i \ge .019$]. 
+
+```{r, echo=FALSE, message=FALSE, fig.cap="Raw and weighted rates of mental illness among U.S. adults from 2008 to 2019"}
+create_nsduh_trend_plots(
   nsduh_study_df, 
   xvar = 'qtr_date', 
   yvar = 'anymi_12mos', 
@@ -40,13 +76,11 @@ plot_list <- create_nsduh_trend_plots(
   mask_var = 'adult_mask', 
   y_breaks = seq(0, .3, by = .05)
 )
-
-cowplot::plot_grid(plotlist = plot_list, ncol = 1)
 ```
-Figure 2 presents the same trends but for _adults with a college degree_. An important note about these data. Measurement of education levels changed slightly in 2015. That year, and going forward, the highest education level recorded was: "College graduate or higher". The earlier surveys, however, recorded the highest education level as "Senior/16th year or Grad/Prof School (or higher)". I have not been able to find any measures that would make these two measures more equivalent. In both, sets of surveys these two similar, but not equivalent, maximum education levels were used to identify college graduates in subsequent computed variables in the data sets. We are essentially replicating the same logic recommended in both sets of surveys to identify U.S. adult, college graduates, which is likely the best that can be done here.
 
-```{r, echo=FALSE, message=FALSE, fig.height=4, fig.cap="Raw and Weighted Rates of Mental Illness among U.S. Adults with a college degree"}
-plot_list <- create_nsduh_trend_plots(
+```{r, echo=FALSE, message=FALSE, fig.cap="Raw and weighted rates of mental illness among U.S. adults with a college degree from 2008 to 2019"}
+
+create_nsduh_trend_plots(
   nsduh_study_df, 
   xvar = 'qtr_date', 
   yvar = 'anymi_12mos', 
@@ -55,14 +89,136 @@ plot_list <- create_nsduh_trend_plots(
   mask_var = 'college_adult_mask', 
   y_breaks = seq(0, .3, by = .05)
 )
+```
 
-cowplot::plot_grid(plotlist = plot_list, ncol = 1)
+\pagebreak
+
+# Depression
+
+Prior to 2009, the variable `amdeyr` was measured using a different methodology. We include the 2008 data set in our analysis and therefore we need to use the `ajamdeyr` variable (where the "aj" stands for adjusted) for our measure of depression that year. For more context, read the section below taken from the NSDUH 2018 codebook (p. 444): 
+
+>NOTE: The following variable, AMDELT, identifies an adult as having a major depressive episode (MDE) in their lifetime and AMDEYR identifies an adult as having MDE in the prior year. Due to questionnaire changes in 2008, these MDE variables are not directly comparable to MDE variables from 2004 to 2008. Adjusted lifetime and past year MDE variables (AJAMDELT and AJAMDEYR) were developed to allow comparisons of adult MDE data across years beginning with 2005 and continuing through 2008 and later years. Adjusted variables were not created for 2004. The youth MDE variables continue to remain comparable between 2004 and future years. Specific details about the analysis of MDE data can be found in the Recoded Depression Variable Documentation Appendix
+
+The upshot is that we needed a slightly different `data_map`^[All re-codings are tracked in a `data_map*.yaml` file and included in the main GitHub repository] for processing the 2008 data. It is the same as the 2009-2014 map with the exception of the depression variable. 
+
+Additional details regarding the measurement of past year adult depression are below (NSDUH 2018 Codebook, p. F-9).
+
+>Respondents who were classified with lifetime MDE (AMDELT=1 for adults and YMDELT=1 for youths) and who reported that during the past 12 months they had a period of depression lasting 2 weeks or longer, while also having some of the other symptoms mentioned (ADPB2WK=1 for adults and YOPB2WK=1 for youths), were classified as having past year depression (AMDEYR=1 for adults and YMDEYR=1 for youths). Respondents with no lifetime MDE (AMDELT=2 for adults or YMDELT=1 for youths) or respondents with lifetime MDE (AMDELT=1 for adults and YMDELT=1 for youths) but no period of depression lasting 2 weeks or longer while having other symptoms (ADPB2WK=2 for adults or YOPB2WK=2 for youths) were defined as not having past year MDE (AMDEYR=2 for adults or YMDEYR=2 for youths).
+
+And, it is worth noting that lifetime depression was defined as follows given it was used to determine whether an individual experienced a major depressive episode in the past year (NSDUH 2018 Codebook, p. F-8): 
+
+>Respondents were classified with lifetime MDE (AMDELT=1 for adults) if they had at least five of the nine above attributes ( DSMMDEA2/ADSMMDEA=1 for adults). Respondents were classified with not having lifetime MDE (AMDELT=2 for adults) if they met either of these conditions:
+
+> &nbsp; &nbsp; 1. Reported experiencing fewer than five out of the nine criteria used to define an adult as having had MDE in their lifetime (DSMMDEA2/ADSMMDEA=2).
+
+> &nbsp; &nbsp; 2. If the number of criteria is unknown (DSMMDEA2/ADSMMDEA=98) and the respondent reported at least one of the following:
+
+>&nbsp; &nbsp; &nbsp; &nbsp; I. Never having had a period of time lasting several days or longer when felt sad, empty, or depressed (ASC21/ADDPREV=2), discouraged about how things were going in life (ASC22/ADDSCEV=2), and lost interest in most things usually enjoyable (ASC23/ADLOSEV=2).
+
+>&nbsp; &nbsp; &nbsp; &nbsp; II. Experienced the feelings in (I), but they did not last most of the day, nearly every day for two weeks or longer (AD09/ADLSI2WK=2) or (AD12/ADDPR2WK=2).
+
+>&nbsp; &nbsp; &nbsp; &nbsp; III. Experienced the feelings in (I) most of the day, nearly every day for two weeks or longer, but the feelings lasted less than an hour when mood was most severe and frequent (AD16/ADWRHRS=1).
+
+>&nbsp; &nbsp; &nbsp; &nbsp; IV. Experienced the feelings in (I) most of the day, nearly every day for two weeks or longer for at least an hour during those times when mood was most severe and frequent, but emotional distress was mild (AD17/ADWRDST=1), there was never a time when emotional distress was so severe that you could not be cheered up (AD18/ADWRCHR=4), and there was never a time when your emotional distress was so severe that you could not carry out your daily activities (AD19/ADWRIMP=4).
+
+>&nbsp; &nbsp; &nbsp; &nbsp; V. Experienced the feelings in (I) most of the day, nearly every day for two weeks or longer for at least an hour and the severe distress were more than mild or at some point could not be cheered up or could not carry out daily activities, but never had any other problems during those weeks, such as changes in sleep, appetite, energy, the ability to concentrate and remember, or feelings of low self-worth (AD21/ADDPPROB=2)
+
+```{r, echo=FALSE, message=FALSE, fig.cap="Raw and weighted rates of having at least one major depressive episode in the past year among U.S. adults from 2008 to 2019"}
+
+create_nsduh_trend_plots(
+  nsduh_study_df, 
+  xvar = 'qtr_date', 
+  yvar = 'depression_12mos', 
+  yvar_hits = "Yes", 
+  weight_var = 'weights', 
+  mask_var = 'adult_mask', 
+  y_breaks = seq(0, .15, by = .05)
+)
+```
+
+```{r, echo=FALSE, message=FALSE, fig.cap="Raw and weighted rates of having at least one major depressive episode in the past year among U.S. adults with a college degree from 2008 to 2019"}
+
+create_nsduh_trend_plots(
+  nsduh_study_df, 
+  xvar = 'qtr_date', 
+  yvar = 'depression_12mos', 
+  yvar_hits = "Yes", 
+  weight_var = 'weights', 
+  mask_var = 'college_adult_mask', 
+  y_breaks = seq(0, .15, by = .05)
+)
+```
+
+\pagebreak 
+
+# Suicidal Thoughts^[There are two version of this variable in the NSDUH data: one that makes no transformations to response options and one that imputes all "unknown" values as "no". As of this writing we are using the raw, not-imputed version]
+
+Respondents were asked, "At any time in the past 12 months did you seriously think about trying to kill yourself?" The resulting variable is straightforward in its computation compared with the mental illness and major depressive episode variables described above.
+
+```{r, echo=FALSE, message=FALSE, fig.cap="Raw and weighted rates of having serious thoughts of suicide in the past year among U.S. adults from 2008 to 2019"}
+
+create_nsduh_trend_plots(
+  nsduh_study_df, 
+  xvar = 'qtr_date', 
+  yvar = 'suic_thnk_12mos', 
+  yvar_hits = "Yes", 
+  weight_var = 'weights', 
+  mask_var = 'adult_mask', 
+  y_breaks = seq(0, .1, by = .025)
+)
+```
+
+```{r, echo=FALSE, message=FALSE, fig.cap="Raw and weighted rates of having serious thoughts of suicide in the past year among U.S. adults with a college degree from 2008 to 2019"}
+
+create_nsduh_trend_plots(
+  nsduh_study_df, 
+  xvar = 'qtr_date', 
+  yvar = 'suic_thnk_12mos', 
+  yvar_hits = "Yes", 
+  weight_var = 'weights', 
+  mask_var = 'college_adult_mask', 
+  y_breaks = seq(0, .1, by = .025)
+)
 ```
 
 
+\pagebreak 
 
+# Suicide Attempt
+
+If respondents indicated that they had seriously considered suicide in the past year, they were asked a follow-up question, "During the past 12 months, did you try to kill yourself?" Again, the variable generated from this question has a straightforward yes/no interpretation. 
+
+```{r, echo=FALSE, message=FALSE, fig.cap="Raw and weighted rates of making at least one suicide attempt in the past year among U.S. adults from 2008 to 2019"}
+
+create_nsduh_trend_plots(
+  nsduh_study_df, 
+  xvar = 'qtr_date', 
+  yvar = 'suic_try_12mos', 
+  yvar_hits = "Yes", 
+  weight_var = 'weights', 
+  mask_var = 'adult_mask', 
+  y_breaks = seq(0, .025, by = .005)
+)
+```
+
+```{r, echo=FALSE, message=FALSE, fig.cap="Raw and weighted rates of making at least one suicide attempt in the past rear among U.S. adults with a college degree from 2008 to 2019"}
+
+create_nsduh_trend_plots(
+  nsduh_study_df, 
+  xvar = 'qtr_date', 
+  yvar = 'suic_try_12mos', 
+  yvar_hits = "Yes", 
+  weight_var = 'weights', 
+  mask_var = 'college_adult_mask', 
+  y_breaks = seq(0, .025, by = .005)
+)
+```
 
 ```{r bib, include=FALSE}
 # create a bib file for the R packages used in this document
-# knitr::write_bib(c('base', 'rmarkdown'), file = 'skeleton.bib')
+knitr::write_bib(c('tidyverse', 'rmarkdown'), file = 'NSDUH_trends.bib')
 ```
+
+\pagebreak 
+
+# Packages Used

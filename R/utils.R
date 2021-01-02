@@ -80,6 +80,7 @@ create_study_datasets <- function(df, map_filepath) {
 
 helper_recode_func <- function(df, data_map, recode_names, study_names) {
     # Apply the recodes as appropriate from the data map
+
     df <- df %>% 
         imap_dfc(~ if (hasName(data_map, .y) && hasName(data_map[[.y]], "responses"))
             recode(.x, !!! data_map[[.y]][["responses"]])) %>% 
@@ -96,4 +97,46 @@ helper_recode_func <- function(df, data_map, recode_names, study_names) {
     
     return(list(base_df = df, 
                 study_df = study_df))
+}
+
+#' Strips attributes read in from read_spss function. Adapted from sjlabelled package
+#' 
+#' @param df a \code{data.frame} - usually imported from SPSS using the haven package
+
+strip_df_attributes <- function(df) {
+
+    is_labelled <- function(x){
+        inherits(x, c("labelled", "haven_labelled"))
+    } 
+    
+    attr(df, "label") <- NULL
+    attr(df, "labels") <- NULL 
+    attr(df, "format.spss") <- NULL
+    attr(df, 'display_width') <- NULL
+    
+    if (is_labelled(df)) df <- unclass(df)
+    
+    return(df)
+}
+
+
+#' Loads and preps ncha data from SPSS file format 
+#' 
+#' @param file_path absolute path to the target file - should be in .sav format
+#' 
+#' @importFrom haven read_spss
+
+load_and_prep_NCHA_file <- function(file_path) {
+    if(!file.exists(file_path)) {
+        warning(paste("Unable to find:", file_path))
+    }
+    
+    df <- read_spss(file_path, user_na = FALSE)
+    
+    df_t <- lapply(df, strip_df_attributes) %>% 
+        as.data.frame()
+    
+    names(df_t) <- names(df)
+    
+    return(df_t)
 }

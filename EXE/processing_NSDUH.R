@@ -70,3 +70,6 @@ nsduh_study_df[['suic_try_12mos']] <- ifelse(is.na(nsduh_study_df[['suic_try_12m
 
 save(list = c('nsduh_study_df', nsduh_dfs), 
      file = '{DATA_DIR}/NSDUH/nsduh_study_data.RData' %>% glue())
+
+write.csv('nsduh_study_df', 
+          file = '{DATA_DIR}/NSDUH/nsduh_study_data.csv' %>% glue())

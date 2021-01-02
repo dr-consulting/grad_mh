@@ -1,0 +1,415 @@
+NQ1: 
+    study_name: global_health
+    text: How would you describe your general health
+    responses: 
+        1: Excellent
+        2: Very good
+        3: Good
+        4: Fair
+        5: Poor
+        6: Don't know
+
+NQ30A: 
+    study_name: Q30A_hopeless
+    text: Felt things were hopeless
+    responses: 
+        1: No, Never
+        2: No, not in the last 12 months
+        3: Yes, in the last 2 weeks
+        4: Yes, in the last 30 days
+        5: Yes, in the last 12 months
+        
+NQ30B: 
+    study_name: Q30B_overwhelmed
+    text: Felt overwhelmed by all you had to do
+    responses: 
+        1: No, Never
+        2: No, not in the last 12 months
+        3: Yes, in the last 2 weeks
+        4: Yes, in the last 30 days
+        5: Yes, in the last 12 months
+
+NQ30C: 
+    study_name: Q30C_exhausted
+    text: Felt exhausted (not from physical activity)
+    responses: 
+        1: No, Never
+        2: No, not in the last 12 months
+        3: Yes, in the last 2 weeks
+        4: Yes, in the last 30 days
+        5: Yes, in the last 12 months
+
+NQ30D: 
+    study_name: Q30D_lonely
+    text: Felt very lonely
+    responses: 
+        1: No, Never
+        2: No, not in the last 12 months
+        3: Yes, in the last 2 weeks
+        4: Yes, in the last 30 days
+        5: Yes, in the last 12 months
+
+NQ30E: 
+    study_name: Q30E_sad
+    text: Felt very sad
+    responses: 
+        1: No, Never
+        2: No, not in the last 12 months
+        3: Yes, in the last 2 weeks
+        4: Yes, in the last 30 days
+        5: Yes, in the last 12 months
+
+NQ30F: 
+    study_name: Q30F_depressed
+    text: Felt so depressed that it was difficult to function
+    responses: 
+        1: No, Never
+        2: No, not in the last 12 months
+        3: Yes, in the last 2 weeks
+        4: Yes, in the last 30 days
+        5: Yes, in the last 12 months
+
+NQ30G: 
+    study_name: Q30G_anxiety
+    text: Felt overwhelming anxiety
+    responses: 
+        1: No, Never
+        2: No, not in the last 12 months
+        3: Yes, in the last 2 weeks
+        4: Yes, in the last 30 days
+        5: Yes, in the last 12 months
+
+NQ30H: 
+    study_name: Q30H_anger
+    text: Felt overwhelming anger
+    responses: 
+        1: No, Never
+        2: No, not in the last 12 months
+        3: Yes, in the last 2 weeks
+        4: Yes, in the last 30 days
+        5: Yes, in the last 12 months
+
+NQ30I: 
+    study_name: Q30I_selfharm
+    text: Intentionally cut, burned, bruised, or otherwise injured yourself
+    responses: 
+        1: No, Never
+        2: No, not in the last 12 months
+        3: Yes, in the last 2 weeks
+        4: Yes, in the last 30 days
+        5: Yes, in the last 12 months
+
+NQ30J: 
+    study_name: Q30J_suic_thnk
+    text: Seriously considered suicide
+    responses: 
+        1: No, Never
+        2: No, not in the last 12 months
+        3: Yes, in the last 2 weeks
+        4: Yes, in the last 30 days
+        5: Yes, in the last 12 months
+
+NQ30K: 
+    study_name: Q30K_suic_try
+    text: Attempted suicide
+    responses: 
+        1: No, Never
+        2: No, not in the last 12 months
+        3: Yes, in the last 2 weeks
+        4: Yes, in the last 30 days
+        5: Yes, in the last 12 months
+
+NQ31A1: 
+    study_name: Q31A_anoxeria
+    text: Within the last 12 months, have you been diagnosed or treated by a professional for anorexia
+    responses: 
+        1: "No"
+        2: Yes, diagnosed but not treated
+        3: Yes, treated with medication
+        4: Yes, treated with psychotherapy
+        5: Yes, treated with medication and psychotherapy
+        6: Yes, other treatment
+
+NQ31A2: 
+    study_name: Q31A_anxiety
+    text: Within the last 12 months, have you been diagnosed or treated by a professional for anxiety
+    responses: 
+        1: "No"
+        2: Yes, diagnosed but not treated
+        3: Yes, treated with medication
+        4: Yes, treated with psychotherapy
+        5: Yes, treated with medication and psychotherapy
+        6: Yes, other treatment
+
+NQ31A3: 
+    study_name: Q31A_adhd
+    text: Within the last 12 months, have you been diagnosed or treated by a professional for attention deficit hyperactivity disorder (ADHD)
+    responses: 
+        1: "No"
+        2: Yes, diagnosed but not treated
+        3: Yes, treated with medication
+        4: Yes, treated with psychotherapy
+        5: Yes, treated with medication and psychotherapy
+        6: Yes, other treatment
+
+NQ31A4: 
+    study_name: Q31A_bipolar
+    text: Within the last 12 months, have you been diagnosed or treated by a professional for bipolar disorder
+    responses: 
+        1: "No"
+        2: Yes, diagnosed but not treated
+        3: Yes, treated with medication
+        4: Yes, treated with psychotherapy
+        5: Yes, treated with medication and psychotherapy
+        6: Yes, other treatment
+
+NQ31A5: 
+    study_name: Q31A_bulimia
+    text: Within the last 12 months, have you been diagnosed or treated by a professional for bulimia
+    responses: 
+        1: "No"
+        2: Yes, diagnosed but not treated
+        3: Yes, treated with medication
+        4: Yes, treated with psychotherapy
+        5: Yes, treated with medication and psychotherapy
+        6: Yes, other treatment
+
+NQ31A6: 
+    study_name: Q31A_depression
+    text: Within the last 12 months, have you been diagnosed or treated by a professional for depression
+    responses: 
+        1: "No"
+        2: Yes, diagnosed but not treated
+        3: Yes, treated with medication
+        4: Yes, treated with psychotherapy
+        5: Yes, treated with medication and psychotherapy
+        6: Yes, other treatment
+
+NQ31A7: 
+    study_name: Q31A_insomnia
+    text: Within the last 12 months, have you been diagnosed or treated by a professional for insomnia
+    responses: 
+        1: "No"
+        2: Yes, diagnosed but not treated
+        3: Yes, treated with medication
+        4: Yes, treated with psychotherapy
+        5: Yes, treated with medication and psychotherapy
+        6: Yes, other treatment
+
+NQ31A8: 
+    study_name: Q31A_othrsleep
+    text: Within the last 12 months, have you been diagnosed or treated by a professional for other sleep disorder
+    responses: 
+        1: "No"
+        2: Yes, diagnosed but not treated
+        3: Yes, treated with medication
+        4: Yes, treated with psychotherapy
+        5: Yes, treated with medication and psychotherapy
+        6: Yes, other treatment
+
+NQ31B1: 
+    study_name: Q31B_ocd
+    text: Within the last 12 months, have you been diagnosed or treated by a professional for anorexia obsessive compulsive disorder (OCD)
+    responses: 
+        1: "No"
+        2: Yes, diagnosed but not treated
+        3: Yes, treated with medication
+        4: Yes, treated with psychotherapy
+        5: Yes, treated with medication and psychotherapy
+        6: Yes, other treatment
+
+NQ31B2: 
+    study_name: Q31B2_panic
+    text: Within the last 12 months, have you been diagnosed or treated by a professional for panic attacks
+    responses: 
+        1: "No"
+        2: Yes, diagnosed but not treated
+        3: Yes, treated with medication
+        4: Yes, treated with psychotherapy
+        5: Yes, treated with medication and psychotherapy
+        6: Yes, other treatment
+
+NQ31B3: 
+    study_name: Q31B_phobia
+    text: Within the last 12 months, have you been diagnosed or treated by a professional for phobia
+    responses: 
+        1: "No"
+        2: Yes, diagnosed but not treated
+        3: Yes, treated with medication
+        4: Yes, treated with psychotherapy
+        5: Yes, treated with medication and psychotherapy
+        6: Yes, other treatment
+
+NQ31B4: 
+    study_name: Q31B_schizo
+    text: Within the last 12 months, have you been diagnosed or treated by a professional for schizophrenia
+    responses: 
+        1: "No"
+        2: Yes, diagnosed but not treated
+        3: Yes, treated with medication
+        4: Yes, treated with psychotherapy
+        5: Yes, treated with medication and psychotherapy
+        6: Yes, other treatment
+
+NQ31B5: 
+    study_name: Q31B_substance
+    text: Within the last 12 months, have you been diagnosed or treated by a professional for substance use or addiction (alcohol or other drugs)
+    responses: 
+        1: "No"
+        2: Yes, diagnosed but not treated
+        3: Yes, treated with medication
+        4: Yes, treated with psychotherapy
+        5: Yes, treated with medication and psychotherapy
+        6: Yes, other treatment
+
+NQ31B6: 
+    study_name: Q31B_othraddctn
+    text: Within the last 12 months, have you been diagnosed or treated by a professional for other addiction (e.g., gambling, internet, sexual)
+    responses: 
+        1: "No"
+        2: Yes, diagnosed but not treated
+        3: Yes, treated with medication
+        4: Yes, treated with psychotherapy
+        5: Yes, treated with medication and psychotherapy
+        6: Yes, other treatment
+
+NQ31B7: 
+    study_name: Q31B_othrmnthlth
+    text: Within the last 12 months, have you been diagnosed or treated by a professional for other mental health condition
+    responses: 
+        1: "No"
+        2: Yes, diagnosed but not treated
+        3: Yes, treated with medication
+        4: Yes, treated with psychotherapy
+        5: Yes, treated with medication and psychotherapy
+        6: Yes, other treatment
+
+NQ37: 
+    study_name: stress_12mos
+    text: Within the last 12 months, how would you rate the overall level of stress you have experienced
+    responses: 
+        1: No stress
+        2: Less than average stress
+        3: Average stress
+        4: More than average stress
+        5: Tremendous stress
+
+NQ46: 
+    study_name: Q46_age
+    text: How old are you
+
+NQ47: 
+    study_name: Q47_gender
+    text: what is your gender
+    responses: 
+        1: Female
+        2: Male
+        3: Transgender
+
+NQ48: 
+    study_name: Q48_sexuality
+    text: What is your sexual orientation
+    responses: 
+        1: Heterosexual
+        2: Gay/Lesbian
+        3: Bisexual
+        4: Unsure
+
+NQ51: 
+    study_name: Q51_classyear
+    text: What is your year in school
+    responses: 
+        1: 1st year undergraduate
+        2: 2nd year undergraduate
+        3: 3rd year undergraduate
+        4: 4th year undergraduate
+        5: 5th year or more undergraduate
+        6: Graduate or professional 
+        7: Not seeking a degree
+        8: Other
+
+NQ52: 
+    study_name: Q52_enrollment
+    text: What is your enrollment status
+    responses: 
+        1: Full-time
+        2: Part-time
+        3: Other
+
+# This next set of questions is a check all that apply in response to: 
+#       How do you usually describe yourself? (Mark all that apply)
+NQ54A: 
+    study_name: Q54_white
+    text: White
+    
+NQ54B: 
+    study_name: Q54_black
+    text: Black
+
+NQ54C: 
+    study_name: Q54_hispanic
+    text: Hispanic or Latino/a
+
+NQ54D: 
+    study_name: Q54_asian
+    text: Asian or Pacific Islander
+    
+NQ54E: 
+    study_name: Q54_native
+    text: American Indian, Alaskan Native, or Native Hawaiian
+
+NQ54F: 
+    study_name: Q54_biracial
+    text: Biracial or Multiracial
+
+NQ54G: 
+    study_name: Q54_other
+    text: Other
+
+NQ55:
+    study_name: Q55_international
+    text: Are you an international student
+    responses: 
+        1: "No"
+        2: "Yes"
+
+PUBPRIV: 
+    study_name: public_schl
+    text: Institutional control
+    responses: 
+        1: 1
+        2: 0
+
+STUDY: 
+    study_name: survey_period
+    text: NCHA Survey Period
+    responses: 
+        24: Fall 2011
+        25: Spring 2012
+        26: Fall 2012
+        27: Spring 2013
+        28: Fall 2013
+        29: Spring 2014
+        30: Fall 2014
+        31: Spring 2015
+
+pwno: 
+    study_name: survey_method
+    text: Survey Mode
+    responses: 
+        1: Paper
+        2: Web
+
+size: 
+    study_name: school_size
+    text: Total enrollment
+    responses:
+        1: "< 2,500 students"
+        2: "2,500 - 4,999 students"
+        3: "5,000 - 9,999 students"
+        4: "10,000 - 19,999 students"
+        5: "20,000 students or more"
+
+PERMID:
+    study_name: school_id
+    text: PERMID is a unique variable used to identify cases from the same institution acorss multiple periods

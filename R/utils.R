@@ -131,7 +131,7 @@ load_and_prep_NCHA_file <- function(file_path) {
         warning(paste("Unable to find:", file_path))
     }
     
-    df <- read_spss(file_path, user_na = FALSE)
+    df <- haven::read_spss(file_path, user_na = FALSE)
     
     df_t <- lapply(df, strip_df_attributes) %>% 
         as.data.frame()
@@ -139,4 +139,19 @@ load_and_prep_NCHA_file <- function(file_path) {
     names(df_t) <- names(df)
     
     return(df_t)
+}
+
+#' Prints latex tables for comparing recoded variables
+#' 
+
+create_latex_crosstabs <- function(df, row_var, col_var, col_sep = "1pt", font_size = "footnotesize") {
+    table(df[[row_var]], df[[col_var]]) %>% 
+        as.matrix() %>% 
+        as.data.frame.matrix() %>% 
+        stargazer::stargazer(
+            column.sep.width = col_sep, 
+            font.size = font_size, 
+            summary = FALSE, 
+            header = FALSE
+        )
 }

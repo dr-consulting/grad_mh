@@ -67,13 +67,14 @@ complete_study_df <- rbind(
                .names = "{col}_2wks"), 
         # Create a one-month version of the distress variables
         across(starts_with('Q30') & ends_with('_r'), 
-               .fns = list(thirty_days = ~ifelse(. %in% c('Yes, in the last 2 weeks', 
-                                                          'Yes, in the last 30 days'), 1, 0)), 
+               .fns = list(thirty_days = ~ifelse(. == 'Yes, in the last 2 weeks' | 
+                                                     . == 'Yes, in the last 30 days', 1, 0)), 
                .names = "{col}_30days"), 
         # Create a one-year version of the distress variables
         across(starts_with('Q30') & ends_with('_r'), 
-               .fns = list(year = ~ifelse(. %in% c('Yes, in the last 2 weeks', 'Yes, in the last 30 days', 
-                                                   'Yes, in the last 12 months'), 1, 0)), 
+               .fns = list(year = ~ifelse(. == 'Yes, in the last 2 weeks' | 
+                                              . == 'Yes, in the last 30 days' |
+                                              . == 'Yes, in the last 12 months', 1, 0)), 
                .names = "{col}_12mos"), 
         # Create dichotomous variables for "diagnosis" 
         across(starts_with("Q31"), 

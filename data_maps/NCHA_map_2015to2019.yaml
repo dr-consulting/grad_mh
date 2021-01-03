@@ -120,7 +120,7 @@ NQ30K:
         5: Yes, in the last 12 months
 
 NQ31A1: 
-    study_name: Q31A_anoxeria
+    study_name: Q31A_anorexia
     text: Within the last 12 months, have you been diagnosed or treated by a professional for anorexia
     responses: 
         1: "No"
@@ -219,7 +219,7 @@ NQ31B1:
         6: Yes, other treatment
 
 NQ31B2: 
-    study_name: Q31B2_panic
+    study_name: Q31B_panic
     text: Within the last 12 months, have you been diagnosed or treated by a professional for panic attacks
     responses: 
         1: "No"

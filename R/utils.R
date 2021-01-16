@@ -126,7 +126,7 @@ strip_df_attributes <- function(df) {
 #' 
 #' @importFrom haven read_spss
 
-load_and_prep_NCHA_file <- function(file_path) {
+load_and_prep_ACHA_file <- function(file_path) {
     if(!file.exists(file_path)) {
         warning(paste("Unable to find:", file_path))
     }
@@ -155,3 +155,54 @@ create_latex_crosstabs <- function(df, row_var, col_var, col_sep = "1pt", font_s
             header = FALSE
         )
 }
+
+#' Runs a principal components analysis with parallel analysis for detection of latent factors
+#' 
+
+pca_w_horns_pa <- function(df, n_sims = 1000, perc = .05, rotation = "oblimin", suppress = .3) {
+    require(nFactors)
+    df_nas_removed <- na.omit(df)
+    cases_dropped <- nrow(df) - nrow(df_nas_removed)
+    message("Dropped {cases_dropped} due to missing data" %>% glue::glue())
+    
+    ev1 <- eigen(cor(df_nas_removed)) # get eigenvalues
+    ap1 <- parallel(subject=nrow(df_nas_removed),var=ncol(df_nas_removed),
+                    rep=n_sims, cent=perc)
+    nS1 <- nScree(x=ev1$values, aparallel=ap1$eigen$qevpea)
+    
+    plot_samp1<-data.frame(Component = 1:ncol(df_nas_removed), 
+                           Eigenvalue = nS1$Analysis$Eigenvalues, 
+                           Horns_PA = nS1$Analysis$Par.Analysis)
+    
+    res_list <- list()
+    res_list[["scree_plot"]] <- plot_samp1 %>% 
+        dplyr::select(Component, Eigenvalue, Horns_PA) %>% 
+        gather(key = "Eigenvalue_src", value = "Eigenvalue", Eigenvalue, Horns_PA) %>%
+        mutate(Eigenvalue_src = recode(Eigenvalue_src, "Eigenvalue"="Obtained Eigenvalues", 
+                                       "Horns_PA"="Horn's Parallel Analysis")) %>% 
+        ggplot(aes(group = Eigenvalue_src, x = Component, y = Eigenvalue, color = Eigenvalue_src, 
+                   shape = Eigenvalue_src)) +
+        geom_point(size = 1.5) +
+        geom_line() + 
+        scale_color_manual(values = c("Horn's Parallel Analysis" = RColorBrewer::brewer.pal(9, "Reds")[5], 
+                                      "Obtained Eigenvalues" = RColorBrewer::brewer.pal(9, "Blues")[5]), name = "") +
+        scale_shape_manual(values = c("Horn's Parallel Analysis" = 17, 
+                                      "Obtained Eigenvalues" = 16), name = "") +
+        labs(title = "Scree Plot with Parallel Analysis") +
+        theme_bw()
+    
+    retain_rows <- which(plot_samp1$Eigenvalue > plot_samp1$Horns_PA)
+    fit <- psych::principal(df_nas_removed, nfactors = length(retain_rows), rotate = rotation)
+    load1 <- unclass(fit$loadings)
+    load1 <- round(load1, digits = 2)
+    load1[abs(load1) < suppress]<-""
+    
+    res_list[["pca"]] <- fit 
+    res_list[["latex_table"]] <- knitr::kable(load1)
+    
+    return(res_list)
+}
+
+
+
+

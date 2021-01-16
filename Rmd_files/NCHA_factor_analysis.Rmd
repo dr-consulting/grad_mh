@@ -1,0 +1,204 @@
+---
+title: "Factor Analysis and Psychometrics of Subjective Distress"
+runningheader: "DeYoung et al. 2020" # only for pdf output
+author: "Matthew Barstead, Ph.D."
+date: "`r Sys.Date()`"
+output:
+  tufte::tufte_handout:
+    includes: 
+      in_header: preamble.tex
+    highlight: tango
+  tufte::tufte_html: default
+  tufte::tufte_book:
+    highlight: tango
+  pdf_document:
+    includes: 
+      in_header: preamble.tex
+bibliography: 
+nocite: '@*'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE, echo = FALSE)
+library(ggraph)
+library(glue)
+library(tidyverse)
+library(tidygraph)
+library(tufte)
+
+# Don't forget the DATA_VERSION update if needed
+DATA_VERSION <- "2021-01-15"
+
+source('~/github/ATNL/grad_mh/project_config.R')
+sapply(list.files(R_DIR, full.names = TRUE), source)
+load('{DATA_DIR}/ACHA-II/acha_grad_students_base_{DATA_VERSION}.RData' %>% glue())
+
+set.seed(19151125)
+train_rows <- sample(1:nrow(grads_only_study_df), size = floor(nrow(grads_only_study_df) * .7))
+grad_train <- grads_only_study_df[train_rows,]
+grad_test <- grads_only_study_df[-train_rows,]
+```
+
+# Overview
+These analyses explore the degree to which the NHCA data supports creating one or more composite scores using responses to these 11 items: `r paste0("NQ30", LETTERS[1:11]) %>% paste(collapse = ", ")`. Responses were recorded on an ordinal scale with lower values corresponding to having never felt the target emotion or engaged in the indicated behavior and higher values corresponding to having experienced the emotion or performed the act recently (within the past two weeks). The rank order used for these items is displayed below^[For information about the transformations from the raw items to those used in these analyses see the `NCHA_data_QA.Rmd` file located [here](https://github.com/dr-consulting/grad_mh/blob/main/Rmd_files/NCHA_data_QA.Rmd)]: 
+
+1. No, never
+2. No, not in the last 12 months
+3. Yes, in the last 12 months
+4. Yes, in the last 30 days
+5. Yes, in the last 2 weeks
+
+# Method
+The analyses will involve 3 phases, relying on a 70/30 training/testing sampling approach. In the first stage of the analysis, we explore the potential invariance of inter-item correlations over time. We expect mean levels to change. It is a core aspect of our proposed modeling approach for the final analyses. However, if we were to create composites that track change in a broader dimension or latent factor, we should know that the shared variance among the items used to create said composite is not changing too much. Essentially, we want some assurance that we are likely measuring the same phenomenon with any composites we create over time^[Finding basic support for invariance of relevant psychometric properties over time is not sufficient on its own to _prove_ that any composites or factor scores created assess the same phenomenon. But it is a good start]. 
+
+The second phase is an extension of the first. The focus will be on identifying the optimal number of factors to retain from the items. To help guide decision-making around factor structure (what items load on what latent factor, how many factors, etc.), we'll rely first on principal components analysis combined with Horn's parallel analysis to create a initial proposal of the latent dimensions and their structure in relation to the observed scores. We'll then take an exploratory structural equation modeling approach to evaluate the appropriateness of the factor structure, formally assess measurement invariance over time, and perform sensitivity analyses by comparing alternative models. 
+
+The third phase is only possible if we can successfully create a defensible latent variable model in the second phase. If we do, then we can use the hold out sample to evaluate its performance on "unseen" data. 
+
+# Analyses
+
+## Phase I - Exploratory Psychometrics
+
+There are a total of 22 separate surveys contained within the aggregated NCHA data set. The analyses below provide insight into the overall pattern of association among our ordinally transformed `Q30` variables. Our initial expectations were that somewhere between 1 and 3 factors may emerge, based on initial exploratory analyses. 
+
+```{r, fig.height=4, fig.cap="Correlation network for complete training sample, across all survey time points. Correlations computed using Spearman's rank order method and only values > .5 are displayed. Thicker, denser lines represent stronger correlations. Three colors based on assumed categories of emotional distress (blue), stress (purple), and suicidality (green)"}
+vars <- grads_only_study_df %>% 
+    select(starts_with('Q30') & ends_with('_r')) %>% 
+    colnames()
+
+label_map <- c("Hopeless", 'Overwhelmed', "Exhausted", "Lonely", "Sad", "Depressed", "Anxiety", "Anger", "Self-Harm", 
+               "Suicidal Thoughts", "Suicide Attempt")
+
+names(label_map) <- vars
+
+emo_distress <- c("Hopeless", "Lonely", "Sad", "Depressed", "Anxiety", "Anger")
+high_stress <- c('Overwhelmed', "Exhausted")
+suicidality <- c("Self-Harm", "Suicidal Thoughts", "Suicide Attempt")
+
+color_map <- c(
+  rep(analogous_palette[1], 6), # for 6 emotional distress items
+  rep(analogous_palette[2], 2), # for 2 stress items
+  rep(analogous_palette[3], 3) # for 3 suicide & self-harm items
+)
+
+names(color_map) <- c(emo_distress, high_stress, suicidality)
+
+cor_method <- "spearman"
+cor_cutoff <- .5
+
+create_cor_network_plot(grad_train, vars, cor_method, label_map, color_map, cor_cutoff)
+```
+
+\newthought{Figure 1 suggests} that, at least when using a cutoff value of $r \ge .5$, there very well may be three factors. In the full training data, there is complete separation at this threshold among what we suspected could be three factors tapping negative emotionality, stress, and suicidality. While this pattern may emerge in the aggregate, it is not necessarily true that it would be consistently true across time. 
+
+Thus, we next binned our training data into 4, approximately equally sampled epochs, using the survey collection dates. The results are displayed in Figure 2. While there is some indication that slight variations did emerge across the 4 randomly divided epochs, by and large the same correlation network (again, when thresholded at $r \ge .5$), replicated in each time window. We will test the invariance of the final set of latent factors more formally in the next phases of these analyses.
+
+```{r, fig.height=10, fig.fullwidth=TRUE, fig.width=7.5, fig.cap="Correlation networks for training sample split by 4 epochs designed to return approximately equally sized bins. There is some overlap in sequential epochs. For instance, the first epoch is Fall of 2008 to Spring of 2011 (F08-S11) and the second epoch is Spring of 2011 to Spring of 2014 (S11-S14)."}
+grad_train <- grad_train %>% 
+  mutate(
+    epochs = ntile(time_point, 4)
+  )
+
+g1 <- create_cor_network_plot(grad_train %>% 
+                                filter(epochs == 1), 
+                              vars, cor_method, label_map, color_map, cor_cutoff)
+
+g2 <- create_cor_network_plot(grad_train %>% 
+                                filter(epochs == 2), 
+                              vars, cor_method, label_map, color_map, cor_cutoff)
+
+g3 <- create_cor_network_plot(grad_train %>% 
+                                filter(epochs == 3), 
+                              vars, cor_method, label_map, color_map, cor_cutoff)
+
+g4 <- create_cor_network_plot(grad_train %>% 
+                                filter(epochs == 4), 
+                              vars, cor_method, label_map, color_map, cor_cutoff)
+
+cowplot::plot_grid(g1, g2, g3, g4, nrow = 2, labels = c('F08-S11', 'S11-S14', 'S14-F16', 'F16-S19'))
+```
+
+\pagebreak
+
+\newthought{Probing slightly deeper} into the (still emerging) factor structure, univariate and bivariate distributions are presented in Figures 4 through 6. As a reminder, higher scores mean that respondents more recently felt the target emotion or engaged in the described behavior. 
+
+One clearly observable trend is that, even on an ordinal scale and with the exception of the suicidality variables, the bivariate associations are effectively linear in nature^[Figures 4-6 did not present any traditional scatterplots to visually describe the bivariate distributions. The ordinal data and the large sample size effectively returned a series of 5 x 5 grids with points perfectly overlayed on top of one another. A 2-dimensional heatmap is probably a better tool for observing the bivariate densities. See the `geom_bin2d` function as a starting point for 2D density plots.]. Another notable feature of these data is that the suicidality and self-harm items have fairly low base rates, which is not that surprising. 
+
+\newthought{At this stage}, there is some tentative support for the existence of a set of latent variables that give rise to the observed scores on this set of 11 items. The latent variables may be best conceptualized as an indicator of degree to which certain _feelings of_ or _behaviors related to_ subjective distress were recently felt. It is tempting to take it a step further and conceptualize the existence of potential latent factors as mapping onto severity. All else being equal, more severely distressed individuals are more likely to have experienced elevated distress more recently, but we should not assume a 1:1 conceptual mapping between recency and severity. 
+
+```{r, fig.height=10, fig.fullwidth=TRUE, fig.width=7.5, fig.cap="Univariate and bivariate distributions of the proposed emotional distress items. A 95-percent ellipse and a loess regression line are presented instead to visually depict bivariate associations"}
+
+grad_train %>% 
+  rename_with(.fn = function(x){label_map[x]}, all_of(names(label_map))) %>% 
+  select(all_of(emo_distress)) %>% 
+  psych::pairs.panels(
+    hist.col = base_palette[1], 
+    show.points = FALSE, 
+    method = 'spearman', 
+    density = FALSE, 
+    rug = FALSE
+  )
+```
+
+```{r, fig.height=3.35, fig.align="left", fig.cap="Univariate and bivariate distributions of the proposed emotional distress items. A 95-percent ellipse and a loess regression line visually depict bivariate associations"}
+
+grad_train %>% 
+  rename_with(.fn = function(x){label_map[x]}, all_of(names(label_map))) %>% 
+  select(all_of(high_stress)) %>% 
+  psych::pairs.panels(
+    hist.col = base_palette[1], 
+    show.points = FALSE, 
+    method = 'spearman', 
+    density = FALSE, 
+    rug = FALSE
+  )
+```
+
+```{r, fig.height=5, fig.align="left", fig.cap="Univariate and bivariate distributions of the proposed emotional distress items. A 95-percent ellipse and a loess regression line visually depict bivariate associations"}
+
+grad_train %>% 
+  rename_with(.fn = function(x){label_map[x]}, all_of(names(label_map))) %>% 
+  select(all_of(suicidality)) %>% 
+  psych::pairs.panels(
+    hist.col = base_palette[1], 
+    show.points = FALSE, 
+    method = 'spearman', 
+    density = FALSE, 
+    rug = FALSE
+  )
+```
+
+\pagebreak
+
+## Phase II - PCA and Invariance Testing
+
+\newthought{Horn's Parallel Analysis} is a principled way of detecting latent factors / dimension in observed data. Instead of using arbitrary cutoffs, we simulate uncorrelated data sets with the same dimensionality as the target data. Then we extract eigenvalue distributions from each principal component. Lastly, we "walk" down the eigenvalues of principal components in the observed data, moving from the largest to the smallest. If the $i$th eigenvalue dips below the corresponding eigenvalue extracted from the simulated data's $i$th component, we stop and "retain" all components preceding the detection of the lower observed eigenvalue. 
+
+We'll apply this approach to each epoch separately, again as a means of verifying that whatever latent structure exists it is reasonably consistent over the entire data collection period. First, epoch 1 data, beginning with the scree plot, which shows a very close retention call for the third component. 
+
+```{r}
+res_epoch_1 <- 
+grad_train %>% 
+  rename_with(.fn = function(x){label_map[x]}, all_of(names(label_map))) %>% 
+  select(all_of(c(emo_distress, high_stress, suicidality))) %>%
+  mutate_all(as.numeric) %>% 
+  pca_w_horns_pa()
+```
+
+```{r}
+res_epoch_1$scree_plot
+```
+
+```{r}
+res_epoch_1$latex_table
+```
+_Pending agreement that there is sufficient value add to moving forward with these analyses_
+
+## Phase III - Out of Sample CFA
+
+_Pending agreement that there is sufficient value add to moving forward with these analyses_
+
+```{r bib, include=FALSE}
+# create a bib file for the R packages used in this document
+knitr::write_bib(c('base', 'rmarkdown'), file = 'skeleton.bib')
+```

@@ -159,11 +159,12 @@ create_latex_crosstabs <- function(df, row_var, col_var, col_sep = "1pt", font_s
 #' Runs a principal components analysis with parallel analysis for detection of latent factors
 #' 
 
-pca_w_horns_pa <- function(df, n_sims = 1000, perc = .05, rotation = "oblimin", suppress = .3) {
+pca_w_horns_pa <- function(df, tbl_cap_base, n_sims = 1000, perc = .05, rotation = "oblimin", suppress = .3, 
+                           col_palette = c("#42bd92", "#426EBD")) {
     require(nFactors)
     df_nas_removed <- na.omit(df)
     cases_dropped <- nrow(df) - nrow(df_nas_removed)
-    message("Dropped {cases_dropped} due to missing data" %>% glue::glue())
+    message("Dropped {cases_dropped} out of {nrow(df)} observations due to missing data" %>% glue::glue())
     
     ev1 <- eigen(cor(df_nas_removed)) # get eigenvalues
     ap1 <- parallel(subject=nrow(df_nas_removed),var=ncol(df_nas_removed),
@@ -172,33 +173,40 @@ pca_w_horns_pa <- function(df, n_sims = 1000, perc = .05, rotation = "oblimin", 
     
     plot_samp1<-data.frame(Component = 1:ncol(df_nas_removed), 
                            Eigenvalue = nS1$Analysis$Eigenvalues, 
-                           Horns_PA = nS1$Analysis$Par.Analysis)
+                           PA = nS1$Analysis$Par.Analysis)
     
     res_list <- list()
     res_list[["scree_plot"]] <- plot_samp1 %>% 
-        dplyr::select(Component, Eigenvalue, Horns_PA) %>% 
-        gather(key = "Eigenvalue_src", value = "Eigenvalue", Eigenvalue, Horns_PA) %>%
+        dplyr::select(Component, Eigenvalue, PA) %>% 
+        gather(key = "Eigenvalue_src", value = "Eigenvalue", Eigenvalue, PA) %>%
         mutate(Eigenvalue_src = recode(Eigenvalue_src, "Eigenvalue"="Obtained Eigenvalues", 
-                                       "Horns_PA"="Horn's Parallel Analysis")) %>% 
+                                       "PA"="Horn's Parallel Analysis")) %>% 
         ggplot(aes(group = Eigenvalue_src, x = Component, y = Eigenvalue, color = Eigenvalue_src, 
                    shape = Eigenvalue_src)) +
         geom_point(size = 1.5) +
         geom_line() + 
-        scale_color_manual(values = c("Horn's Parallel Analysis" = RColorBrewer::brewer.pal(9, "Reds")[5], 
-                                      "Obtained Eigenvalues" = RColorBrewer::brewer.pal(9, "Blues")[5]), name = "") +
+        scale_color_manual(values = c("Horn's Parallel Analysis" = col_palette[2], 
+                                      "Obtained Eigenvalues" = col_palette[1]), name = "") +
         scale_shape_manual(values = c("Horn's Parallel Analysis" = 17, 
                                       "Obtained Eigenvalues" = 16), name = "") +
-        labs(title = "Scree Plot with Parallel Analysis") +
-        theme_bw()
+        theme_bw() +
+        theme(legend.position = "bottom")
     
-    retain_rows <- which(plot_samp1$Eigenvalue > plot_samp1$Horns_PA)
-    fit <- psych::principal(df_nas_removed, nfactors = length(retain_rows), rotate = rotation)
-    load1 <- unclass(fit$loadings)
-    load1 <- round(load1, digits = 2)
-    load1[abs(load1) < suppress]<-""
+    retain_cnt <- which(plot_samp1$Eigenvalue > plot_samp1$PA)
+    fit <- psych::principal(df_nas_removed, nfactors = length(retain_cnt), rotate = rotation)
+    load_tbl <- unclass(fit$loadings)
+    load_tbl <- round(load_tbl, digits = 3)
+    load_tbl[abs(load_tbl) < suppress]<-""
+    colnames(load_tbl) <- paste0("F", 1:length(retain_cnt))
+    
+    caption_text <- stringr::str_wrap("{tbl_cap_base} Number of factors retained determined using parallel analysis 
+                                      - retaining only those factors that exceeded the {(1 - perc)*100}th percentile. 
+                                      Loadings reported in the table based on {rotation} rotation. All loadings with an
+                                      absolute value less than {suppress} are suppressed." %>% glue::glue())
     
     res_list[["pca"]] <- fit 
-    res_list[["latex_table"]] <- knitr::kable(load1)
+    res_list[["latex_table"]] <- knitr::kable(load_tbl, caption = caption_text, format = "latex", booktabs = TRUE)
+    res_list[["pa_results"]] <- plot_samp1
     
     return(res_list)
 }

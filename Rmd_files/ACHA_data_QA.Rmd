@@ -1,0 +1,1699 @@
+---
+title: "ACHA-NCHA Data Transformation and Quality Checks"
+runningheader: "DeYoung et al. 2021" # only for pdf output
+author: "Matthew Barstead, Ph.D."
+date: "`r Sys.Date()`"
+output:
+  tufte::tufte_handout:
+    includes: 
+      in_header: preamble.tex
+    highlight: tango
+  tufte::tufte_html: default
+  tufte::tufte_book:
+    highlight: tango
+  pdf_document:
+    includes: 
+      in_header: preamble.tex
+bibliography: ACHA_data_QA.bib
+nocite: '@*'
+---
+
+```{r setup, include=FALSE}
+library(glue)
+library(tidyverse)
+source('~/github/ATNL/grad_mh/project_config.R')
+sapply(list.files(R_DIR, full.names = TRUE), source)
+DATA_VERSION <- "2021-01-15"
+load('{DATA_DIR}/ACHA-II/acha_study_data_{DATA_VERSION}.RData' %>% glue())
+```
+
+# Overview
+There are four sets of variables targeted for inclusion in the current project. This codebook describes the items in each of these sets and any "base" transformations made from the original raw data. The transformations are "fundamental" and do not include study-specific creation of new variables. With the exception of the mental health diagnosis and treatment variables, the essential meaning of each variable described herein remained unchanged. 
+
+One important factor to note is that some aspects of the coding change slightly from survey to survey. The period covered includes three iterations of the ACHA-NCHA survey (II-A, II-B, and II-C). 
+
+The variable categories are: 
+
+1. Demographic Variables
+2. Instituional Variables
+3. Emotional Distress / Suicidality Variables
+4. Mental Health Diagnosis / Treatment
+
+Abbreviations: 
+
+- **ACHA** American College Health Association
+- **NCHA** National Collegiate Health Assessment
+- **II-A** The ACHA-NCHA survey covering Fall 2008 through Spring of 2011 (AY 2008-2009 through AY 2010-2011)
+- **II-B** The ACHA-NCHA survey covering Fall 2011 through Spring of 2015 (AY 2011-2012 through AY 2014-2015)
+- **II-B** The ACHA-NCHA survey covering Fall 2015 through Spring of 2019 (AY 2015-2016 through AY 2018-2019)
+
+\pagebreak
+
+# Demographic Variables
+
+## Race and Ethnicity - Individual, Non-Exclusive Recoding
+
+**SUMMARY**
+
+Before combining the data, updates were required to address minor changes from survey II-A to surveys II-B and II-C. In all cases, the race variables were presented as a set of non-exclusive checklist items. Respondents could check as many that applied. For these "individual" variable recodes, changes were to... 
+
+1. ... organize all variables using the same basic naming / category structure.
+2. ... give each indicator variable an explicit name so as to make reading analyses and data sets a bit easier. 
+
+**NEW VARIABLES**
+
+- `Q54_white`: a binary (0, 1) non-exclusive indicator. Participants were coded as 1 if they selected either "White, non Hispanic" (II-A) or "White" (II-B & II-C). Otherwise they received a 0. 
+- `Q54_black`: a binary (0, 1) non-exclusive indicator. Participants were coded as 1 if they selected either "Black, non Hispanic" (II-A) or "Black" (II-B & II-C). Otherwise they received a 0.
+- `Q54_hispanic`: a binary (0, 1) non-exclusive indicator. Participants were coded as 1 if they selected "Hispanic or Latino/a". Otherwise they received a 0.
+- `Q54_asian`: a binary (0, 1) non-exclusive indicator. Participants were coded as 1 if they selected "Asian or Pacific Islander". Otherwise they received a 0.
+- `Q54_native`: a binary (0, 1) non-exclusive indicator. Participants were coded as 1 if they selected "American Indian, Alaskan Native, or Native Hawaiian". Otherwise they received a 0.
+- `Q54_biracial`: a binary (0, 1) non-exclusive indicator. Participants were coded as 1 if they selected "Biracial or Multiracial". Otherwise they received a 0.
+- `Q54_other`: a binary (0, 1) non-exclusive indicator. Participants were coded as 1 if they selected "Other". Otherwise, they received a 0.
+
+*Details* 
+
+The basic design of the race/ethnicity variables did not change across the 3 studies. In each survey, respondents could select all racial/ethnic categories they believed applied to them. What did change across the studies was the specific wording associated with each racial/ethnic response option. 
+
+The II-A survey requested participants select all of the following that applied^[Responses were coded as a 1 if the corresponding box was checked off on the survey and 0 otherwise.]: 
+
+- `NQ54A`: White, non Hispanic (includes Middle Eastern)
+- `NQ54B`: Black, non Hispanic 
+- `NQ54C`: Hispanic or Latino/a 
+- `NQ54D`: Asian or Pacific Islander
+- `NQ54E`: American Indian, Alaskan Native, or Native Hawaiian
+- `NQ54F`: Biracial or Multiracial
+- `NQ54G`: Other
+
+In the II-B survey, the first two options changed slightly in their wording: 
+
+- `NQ54A`: White
+- `NQ54B`: Black 
+
+We chose to treat these two sets of categories as equivalent across the studies. 
+
+**`Q54_white`**
+```{r, results='asis'}
+original_var <- "NQ54A"
+new_var <- "Q54_white"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+**`Q54_black`**
+```{r, results='asis'}
+original_var <- "NQ54B"
+new_var <- "Q54_black"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+**`Q54_hispanic`**
+```{r, results='asis'}
+original_var <- "NQ54C"
+new_var <- "Q54_hispanic"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+**`Q54_asian`**
+```{r, results='asis'}
+original_var <- "NQ54D"
+new_var <- "Q54_asian"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+**`Q54_native`**
+```{r, results='asis'}
+original_var <- "NQ54E"
+new_var <- "Q54_native"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+**`Q54_biracial`**
+```{r, results='asis'}
+original_var <- "NQ54F"
+new_var <- "Q54_biracial"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+**`Q54_other`**
+```{r, results='asis'}
+original_var <- "NQ54G"
+new_var <- "Q54_other"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+\pagebreak
+
+## Race and Ethnicity - Composite Variable
+
+**SUMMARY**
+
+After creating the indicator variables^[See the section entitled "Race and Ethnicity - Individual, Non-Exclusive Recoding"] for each race/ethnicity category, we created a single composite following the basic logic below.
+
+1. If a respondent indicated two or more race/ethnicities, they were assigned to the category `"multi"`
+2. All other respondents that only indicated one race/ethnicity category were assigned that category. 
+3. Any respondents that did not satisfy one of the first two conditions were assigned missing values.
+
+Final categories were - see previous section for slight measurement differences wrt survey II-A vs. II-B and II-C
+
+1. `white`
+2. `black`
+3. `hispanic`
+4. `asian`
+5. `native`
+6. `multi`
+7. `other`
+
+**NEW VARIABLES**
+
+- `race_ethn`: a categorical variable generated by applying the logic described in the summary above to the updated indicator race/ethnicity variables^[e.g., `Q54_white`, `Q54_black`, etc.] across surveys II-A, II-B, and II-C
+
+**`race_ethn` vs `Q54_white`**^[There is no guarantee or expectation that missingness will be equal for these variables - though that is explicitly tested elsewhere for other variables when the expectation exists.]
+```{r, results='asis'}
+original_var <- "race_ethn"
+new_var <- "Q54_white"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+**`race_ethn` vs `Q54_black`**
+```{r, results='asis'}
+original_var <- "race_ethn"
+new_var <- "Q54_black"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+**`race_ethn` vs `Q54_hispanic`**^[Every individual who identified as Hispanic or Latino/a in the original data is present in the "1" column. We can see that 103,351 of those individuals selected Hispanic or Latino/a as their **_sole_** racial/ethnic identity. An additional 16,337 identified with **_at least one other_** racial/ethnic identity.]
+```{r, results='asis'}
+original_var <- "race_ethn"
+new_var <- "Q54_hispanic"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+**`race_ethn` vs `Q54_asian`**
+```{r, results='asis'}
+original_var <- "race_ethn"
+new_var <- "Q54_asian"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+**`race_ethn` vs `Q54_native`**
+```{r, results='asis'}
+original_var <- "race_ethn"
+new_var <- "Q54_native"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+**`race_ethn` vs `Q54_biracial`**
+```{r, results='asis'}
+original_var <- "race_ethn"
+new_var <- "Q54_biracial"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+**`race_ethn` vs `Q54_other`**
+```{r, results='asis'}
+original_var <- "race_ethn"
+new_var <- "Q54_other"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+\pagebreak
+
+## Gender (`NQ47`; `RNQ47A` & `RNQ47B`)
+
+**SUMMARY** 
+
+Creating a single measure of gender was challenging as sex/gender variables changed over time. Survey II-A and II- B relied on the same measure of gender and could be easily combined. Making responses compatible with the changes made in survey II-C required the use of two new variables. The endpoint of this work was creating a three-category (`Male`, `Female`, and `Transgender`) variable that was comparable across surveys II-A, II-B, and II-C. 
+
+**NEW VARIABLES**
+
+- `Q47_gender`: For respondents to II-A or II-B, values were directly copied over from `NQ47` with the "names" instead of numeric placeholders^[Note there were four respondents with a response of 4 - which was not valid. They were dropped]. For respondents to II-C, if they responded `"Yes"` to a new question regarding their transgender status (`NQ47B`), they were assigned `Transgender`, otherwise they were assigned their response to the biological sex question (`RNQ47A`).
+
+*Details*
+
+The crosstabs below compare raw and transformed data for the surveys II-A, II-B, and II-C separately given the question and response differences.
+
+**`NQ47`** vs. **`Q47_gender`** (II-A and II-B)
+
+```{r, results='asis', message=FALSE, warning=FALSE}
+# 2008 - 2011 data 
+ncha_F08_S11 <- load_and_prep_ACHA_file(
+  "{DATA_DIR}/ACHA-II/ACHA-II_F08_S11.sav" %>% glue()
+)
+ncha_F08_S11_df_list <- create_study_datasets(
+  ncha_F08_S11, 
+  '{MAPS_DIR}/ACHA_map_2008to2011.yaml' %>% glue()
+)
+
+original_var <- "NQ47"
+new_var <- "Q47_gender"
+create_latex_crosstabs(
+  data.frame(
+    NQ47 = ncha_F08_S11_df_list[['base_df']][[original_var]], 
+    Q47_gender = ncha_F08_S11_df_list[['study_df']][[new_var]]
+  ), 
+  original_var, new_var
+)
+```
+
+Note that there should be exactly 4 more missing values in the new variable than there were in the old. 
+
+```{r}
+tot_orig_var_na <- is.na(ncha_F08_S11_df_list[['base_df']][[original_var]]) %>% sum()
+tot_new_var_na <- is.na(ncha_F08_S11_df_list[['study_df']][[new_var]]) %>% sum() 
+
+# Subtracting 4 to account for the four cases with non-valid responses
+testthat::expect_equal(tot_orig_var_na, tot_new_var_na - 4)
+```
+
+```{r, results='asis', message=FALSE, warning=FALSE}
+stargazer::stargazer(
+  table(ncha_F08_S11_df_list[['base_df']][[original_var]]) %>% 
+    data.frame(), 
+  column.sep.width = "1pt", 
+  font.size = "footnotesize", 
+  summary = FALSE, 
+  header = FALSE, 
+  rownames = FALSE
+)
+```
+
+```{r, results='asis', message=FALSE, warning=FALSE}
+# 2011 - 2015 data 
+ncha_F11_S15 <- load_and_prep_ACHA_file(
+  "{DATA_DIR}/ACHA-II/ACHA-II_F11_S15.sav" %>% glue()
+)
+ncha_F11_S15_df_list <- create_study_datasets(
+  ncha_F11_S15, 
+  '{MAPS_DIR}/ACHA_map_2011to2015.yaml' %>% glue()
+)
+
+
+create_latex_crosstabs(
+  data.frame(
+    NQ47 = ncha_F11_S15_df_list[['base_df']][[original_var]], 
+    Q47_gender = ncha_F11_S15_df_list[['study_df']][[new_var]]
+  ), 
+  original_var, new_var
+)
+```
+
+```{r}
+orig_var_na <- is.na(ncha_F11_S15_df_list[['base_df']][[original_var]])
+new_var_na <- is.na(ncha_F11_S15_df_list[['study_df']][[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+**`RNQ47A`** and **`RNQ47B`** vs. **`Q47_gender`** (II-C)
+```{r, results='asis', message=FALSE, warning=FALSE}
+# 2015 - 2019 data 
+ncha_F15_S19 <- load_and_prep_ACHA_file(
+  "{DATA_DIR}/ACHA-II/ACHA-II_F15_S19.sav" %>% glue()
+)
+ncha_F15_S19_df_list <- create_study_datasets(
+  ncha_F15_S19, 
+  '{MAPS_DIR}/ACHA_map_2015to2019.yaml' %>% glue()
+)
+
+# The code below is taken directly from the processing script
+
+ncha_F15_S19_df_list[["study_df"]] <- ncha_F15_S19_df_list[["study_df"]] %>% 
+  mutate(
+    Q47_gender = ifelse(Q47_trans == "Yes", "Transgender", Q47_sex)
+  )
+
+original_var <- "RNQ47A"
+new_var <- "Q47_gender"
+
+create_latex_crosstabs(
+  data.frame(
+    RNQ47A = ncha_F15_S19_df_list[['base_df']][[original_var]], 
+    Q47_gender = ncha_F15_S19_df_list[['study_df']][[new_var]]
+  ), 
+  original_var, new_var
+)
+```
+
+```{r, results='asis'}
+original_var <- "RNQ47B"
+new_var <- "Q47_gender"
+
+create_latex_crosstabs(
+  data.frame(
+    RNQ47B = ncha_F15_S19_df_list[['base_df']][[original_var]], 
+    Q47_gender = ncha_F15_S19_df_list[['study_df']][[new_var]]
+  ), 
+  original_var, new_var
+)
+```
+
+There is a slight difference in the totals when examining the II-C crosstabs. This discrepancy can be explained by the fact that we gave "priority" to the trans variable when creating a compatible 3-category gender variable. There were 43 participants with missing values on the available measure of biological sex (`RQN47A`) that responded yes to the measure of transgender identity (`RQN47B`). 
+
+```{r, results='asis'}
+ncha_F15_S19_df_list[['base_df']] %>% 
+  select(RNQ47A, RNQ47B) %>% 
+  mutate(
+    sex_na = is.na(RNQ47A), 
+    trans_yes = RNQ47B == "2"
+  ) %>% 
+  select(sex_na, trans_yes) %>%
+  table() %>% 
+  as.data.frame.matrix() %>% 
+  stargazer::stargazer(
+    column.sep.width = "1pt", 
+    font.size = "footnotesize", 
+    summary = FALSE, 
+    header = FALSE, 
+    rownames = TRUE
+  )
+```
+
+The total for each category in the final gender variable in our `complete_df` is exactly what we would expect if we summed the totals from each of the three surveys. 
+
+```{r, results='asis'}
+stargazer::stargazer(
+  table(complete_df[['Q47_gender']]) %>% 
+    data.frame(), 
+  column.sep.width = "1pt", 
+  font.size = "footnotesize", 
+  summary = FALSE, 
+  header = FALSE, 
+  rownames = FALSE
+)
+```
+
+\pagebreak
+
+## Enrollment status (`NQ52`)
+
+A variable that tracks a student's enrollment status. Options are "Full-time", "Part-time" and "Other". 
+
+**NEW VARIABLES**
+
+- `Q52_enrollment`: a character variable with the three response options ("Full-time", "Part-time", and "Other") encoded as strings as opposed to the raw number mappings in the original data set.
+
+```{r, results='asis'}
+original_var <- "NQ52"
+new_var <- "Q52_enrollment"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+\pagebreak
+
+## International students (`NQ55`)
+
+A dichotomous indicator that tracks whether a student is from a foreign country. 
+
+**NEW VARIABLES**
+
+- `Q55_international`: a character variable with the two response options ("Yes"/"No") encoded as strings as opposed to the raw number mappings in the original data set.
+
+```{r, results='asis'}
+original_var <- "NQ55"
+new_var <- "Q55_international"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+\pagebreak
+
+## Age (`NQ46`)
+
+An integer measuring age in years
+
+**NEW VARIABLES**
+
+- `Q46_age`: Should be equivalent to the original `NQ46` variable. Main change was to give the variable explicit meaning. 
+
+```{r}
+original_var <- "NQ46"
+new_var <- "Q46_age"
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+\pagebreak
+
+## Class Year (`NQ51`)
+
+Categorical variable indicating respondent class year. 
+
+**NEW VARIABELS**
+
+- `Q51_classyear`: categorical ranging from 1st through 5th year. Also includes `Graduate / Professional Student` and `Other`
+
+```{r, results='asis'}
+original_var <- "Q51_classyear"
+new_var <- "NQ51" 
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+\pagebreak
+
+## Survey method (`pwno`)
+
+Indicates whether the respondent completed a web or paper version of the survey.^[Use of the web-based survey was nearly universal.] 
+
+**NEW VARIABLES** 
+
+- `survey_method`: a character vector that tracks survey modality - either "Paper" or "Web."
+
+```{r, results='asis'}
+original_var <- "pwno"
+new_var <- "survey_method"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+\pagebreak
+
+# Instiutional Characteristics
+
+This set of variables is mainly focused on properties of the schools themselves. 
+
+## School Size (`size`)
+
+**NEW VARIABLES**
+
+- `school_size`: ordinal measure with 5 categories from `< 2500` students to `20,000 or more`.
+
+```{r, results='asis'}
+original_var <- "size"
+new_var <- "school_size" 
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+\pagebreak
+
+## Insitution Funding (`PUBPRIV`)
+
+Binary variable that indicates whether a school is public or private. 
+
+**NEW VARIABLES**
+
+- `public_schl`: (0, 1) binary variable - 0 if private, 1 if public.^[originally coded 1 = public; 2 = private] 
+
+```{r, results='asis'}
+original_var <- "PUBPRIV"
+new_var <- "public_schl" 
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+\pagebreak
+
+## Study Timepoint (`STUDY`)
+
+Categorical variable containing the semester and year for each school's / respondent's participation. 
+
+**NEW VARIABLES**
+
+- `survey_period`: A text representation of the study time point that encodes semester and year (e.g., `Fall 2008`)
+- `time_point`: A date variable that is set to Oct 1 of each year for fall semester surveys and April 1 for spring semesters. The intent is to use this variable in plotting and potentially mapping responses to other time series data.
+- `c_Time`: a variable that tracks time in years starting at 0 and progressing by .5 for each survey 
+
+```{r, message=FALSE, warning=FALSE}
+original_counts <- complete_df %>% 
+  select(STUDY) %>% 
+  group_by(STUDY) %>% 
+  summarize(counts = n())
+  
+survey_period_counts <- complete_df %>% 
+  select(survey_period) %>% 
+  group_by(survey_period) %>% 
+  summarize(counts = n())
+
+time_point_counts <- complete_df %>% 
+  select(time_point) %>% 
+  group_by(time_point) %>% 
+  summarize(counts = n())
+
+c_Time_counts <- complete_df %>% 
+  select(c_Time) %>% 
+  group_by(c_Time) %>% 
+  summarize(counts = n())
+
+# Compare all the summary counts - should be equivalent counts for each period regardless of coding
+testthat::expect_equal(original_counts[["counts"]], survey_period_counts[["counts"]]) 
+testthat::expect_equal(original_counts[["counts"]], time_point_counts[["counts"]])
+testthat::expect_equal(original_counts[["counts"]], c_Time_counts[["counts"]])
+testthat::expect_equal(survey_period_counts[["counts"]], time_point_counts[["counts"]])
+testthat::expect_equal(survey_period_counts[["counts"]], c_Time_counts[["counts"]])
+testthat::expect_equal(time_point_counts[["counts"]], c_Time_counts[["counts"]])
+```
+\pagebreak 
+
+## School Permanent ID (`PERMID`)
+
+An ID variable that allows for grouping responses over time from the same school.^[This variable was specially requested.]
+
+**NEW VARIABLES**
+
+- `school_id`: a passthrough variable from the original with a more explicit name. Should be exactly equal.
+
+```{r}
+# The as.character --> as.numeric wrapping needed as there are some levels missing. 
+testthat::expect_equal(as.numeric(as.character(complete_df[["PERMID"]])), 
+                       complete_df[["school_id"]])
+```
+
+\pagebreak
+
+## Total Observations per Survey (`total_obs`)
+
+This variable was created by generating a count for each `PERMID`/`school_id` entry for each survey. 
+
+**NEW VARIABLES**
+
+- `total_obs`: number of responses from each school during for each survey period^[no direct comparison variable avaiable in the data as this was derived.]
+
+\pagebreak 
+
+## School Type (`TYPE`)
+
+Records whether the school is a 2-year or 4-year institution
+
+**NEW VARIABLES**
+
+- `school_type`: binary variable that can be either `2-year` or `4-year`^[Missingness adjustment is due to the presence of 903 responses that were not valid. These values were dropped.]
+
+```{r, results='asis'}
+original_var <- "TYPE"
+new_var <- "school_type" 
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+tot_orig_var_na <- is.na(complete_df[[original_var]]) %>% sum()
+tot_new_var_na <- is.na(complete_df[[new_var]]) %>% sum()
+testthat::expect_equal(tot_new_var_na - 903, tot_orig_var_na)
+```
+
+\pagebreak
+
+## Local Population (`LOCALE`)
+
+Ordinal variable with 6 categories assessing the number of people living in and around the campus. 
+
+**NEW VARIABLES**
+
+- `local_population`: A re-ordering and re-casting of the original variable such that higher rank order values are associated with larger population centers. 
+
+```{r, results='asis'}
+original_var <- "LOCALE"
+new_var <- "local_population" 
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+\pagebreak
+
+## U.S. Region (`REGION`)
+
+Categorical variable that indicates region within U.S. with one additional category for non-U.S. schools
+
+**NEW VARIABLES**
+
+- `us_region`: effectively a passthrough variable that copies the basic structure and updates the formatting of response options slightly from what is present in the codebooks.
+
+```{r, results='asis'}
+original_var <- "REGION"
+new_var <- "us_region" 
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+\pagebreak
+
+## Carnegie Basic Category (`CARNCAT`)
+
+Standard categorization for higher education institutions. Differentiates between 2-year, 4-year colleges, masters' level universities, etc.
+
+**NEW VARIABLES**
+
+- `carnegie_category`: Some minor editing required to align variables across survey as II-C used `carncat` while II-A and II-B used a capitalized `CARNCAT` - as such this variable has not made it to the final data set outside of the study-transformed version and there is no direct comparison possible with the original using current pipeline. 
+
+```{r, results='asis'}
+stargazer::stargazer(
+  table(complete_df[['carnegie_category']]) %>% 
+    data.frame(), 
+  column.sep.width = "1pt", 
+  font.size = "footnotesize", 
+  summary = FALSE, 
+  header = FALSE, 
+  rownames = FALSE
+)
+```
+
+\pagebreak
+
+# Emotional Distress and Self-Harm/Suicidality
+## Executive Summary
+These items were all measured using the same 5-item "recency" scale. The original data did not encode these values in a sensible order. As a result, we created a new version of each of these variables such that lower rank order values would correspond with less recent experiences of the target emotion or behavior. 
+
+**ORIGINAL SCALE MAPPING**
+1. No, never
+2. No, not in the last 12 months
+3. Yes, in the last 2 weeks
+4. Yes, in the last 30 days
+5. Yes, in the last 12 months
+
+**RECODED SCALE MAPPING**^[Note the recoded variables are effectively switching the original `3` and `5` ordinal positions.]
+1. No, never
+2. No, not in the last 12 months
+3. Yes, in the last 12 months
+4. Yes, in the last 30 days
+5. Yes, in the last 2 weeks
+
+## Felt things were hopeless (`NQ30A`)
+
+New variables: 
+
+- `Q30A_hopeless`: factor with 5 numeric levels corresponding to the response options in the original rank order.
+- `Q30A_hopeless_r`: factor with 5 numeric levels and labels that are ordinally ranked from least recent to most recent response option along the 1 - 5 scale
+
+**`Q30A_hopeless`**
+```{r, results='asis'}
+original_var <- "NQ30A"
+new_var <- "Q30A_hopeless"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+# Error is raised and render fails on test failure
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+**`Q30A_hopeless_r`**^[The new variable is labelled with the new positional order which you can see in the columnwise left-to-right order.]
+
+```{r, results='asis'}
+new_var <- "Q30A_hopeless_r"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+\pagebreak
+
+## Felt overwhelmed by all you had to do (`NQ30B`)
+
+New variables: 
+
+- `Q30B_overwhelmed`: factor with 5 numeric levels corresponding to the response options in the original rank order.
+- `Q30B_overwhelmed_r`: factor with 5 numeric levels and labels that are ordinally ranked from least recent to most recent response option along the 1 - 5 scale
+
+**`Q30B_overwhelmed`**
+
+```{r, results='asis'}
+original_var <- "NQ30B"
+new_var <- "Q30B_overwhelmed"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+**`Q30B_overwhelmed_r`**
+
+```{r, results='asis'}
+new_var <- "Q30B_overwhelmed_r"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+\pagebreak
+
+## Felt exhausted (not from physical activity) (`NQ30C`)
+
+New variables: 
+
+- `Q30C_exhausted`: factor with 5 numeric levels corresponding to the response options in the original rank order.
+- `Q30C_exhausted_r`: factor with 5 numeric levels and labels that are ordinally ranked from least recent to most recent response option along the 1 - 5 scale
+
+**`Q30C_exhausted`**
+
+```{r, results='asis'}
+original_var <- "NQ30C"
+new_var <- "Q30C_exhausted"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+**`Q30C_exhausted_r`**
+
+```{r, results='asis'}
+new_var <- "Q30C_exhausted_r"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+\pagebreak
+
+## Felt very lonely (`NQ30D`)
+
+New variables: 
+
+- `Q30D_lonely`: factor with 5 numeric levels corresponding to the response options in the original rank order.
+- `Q30D_lonely_r`: factor with 5 numeric levels and labels that are ordinally ranked from least recent to most recent response option along the 1 - 5 scale
+
+**`Q30D_lonely`**
+
+```{r, results='asis'}
+original_var <- "NQ30D"
+new_var <- "Q30D_lonely"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+**`Q30D_lonely_r`**
+
+```{r, results='asis'}
+new_var <- "Q30D_lonely_r"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+\pagebreak
+
+## Felt very sad (`NQ30E`)
+
+New variables: 
+
+- `Q30E_sad`: factor with 5 numeric levels corresponding to the response options in the original rank order.
+- `Q30E_sad_r`: factor with 5 numeric levels and labels that are ordinally ranked from least recent to most recent response option along the 1 - 5 scale
+
+**`Q30E_sad`**
+
+```{r, results='asis'}
+original_var <- "NQ30E"
+new_var <- "Q30E_sad"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+**`Q30E_sad_r`**
+
+```{r, results='asis'}
+new_var <- "Q30E_sad_r"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+\pagebreak
+
+## Felt so depressed that it was difficult to function (`NQ30F`)
+
+New variables: 
+
+- `Q30F_depressed`: factor with 5 numeric levels corresponding to the response options in the original rank order.
+- `Q30F_depressed_r`: factor with 5 numeric levels and labels that are ordinally ranked from least recent to most recent response option along the 1 - 5 scale
+
+**`Q30F_depressed`**
+
+```{r, results='asis'}
+original_var <- "NQ30F"
+new_var <- "Q30F_depressed"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+**`Q30F_depressed_r`**
+
+```{r, results='asis'}
+new_var <- "Q30F_depressed_r"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+\pagebreak
+
+## Felt overwhelming anxiety (`NQ30G`)
+
+New variables: 
+
+- `Q30G_anxiety`: factor with 5 numeric levels corresponding to the response options in the original rank order.
+- `Q30G_anxiety_r`: factor with 5 numeric levels and labels that are ordinally ranked from least recent to most recent response option along the 1 - 5 scale
+
+**`Q30G_anxiety`**
+
+```{r, results='asis'}
+original_var <- "NQ30G"
+new_var <- "Q30G_anxiety"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+**`Q30G_anxiety_r`**
+
+```{r, results='asis'}
+new_var <- "Q30G_anxiety_r"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+\pagebreak 
+
+## Felt overwhelming anger (`NQ30H`)
+
+New variables: 
+
+- `Q30H_anger`: factor with 5 numeric levels corresponding to the response options in the original rank order.
+- `Q30H_anger_r`: factor with 5 numeric levels and labels that are ordinally ranked from least recent to most recent response option along the 1 - 5 scale
+
+**`Q30H_anger`**
+
+```{r, results='asis'}
+original_var <- "NQ30H"
+new_var <- "Q30H_anger"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+**`Q30H_anger_r`**
+
+```{r, results='asis'}
+new_var <- "Q30H_anger_r"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+\pagebreak
+
+## Intentionally cut, burned, bruised, or otherwise injured yourself (`NQ30I`)
+
+New variables: 
+
+- `Q30I_selfharm`: factor with 5 numeric levels corresponding to the response options in the original rank order.
+- `Q30I_selfharm_r`: factor with 5 numeric levels and labels that are ordinally ranked from least recent to most recent response option along the 1 - 5 scale
+
+**`Q30I_selfharm`**
+
+```{r, results='asis'}
+original_var <- "NQ30I"
+new_var <- "Q30I_selfharm"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+**`Q30I_selfharm_r`**
+
+```{r, results='asis'}
+new_var <- "Q30I_selfharm_r"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+\pagebreak
+
+## Seriously considered suicide (`NQ30J`)
+
+New variables: 
+
+- `Q30J_suic_thnk`: factor with 5 numeric levels corresponding to the response options in the original rank order.
+- `Q30J_suic_thnk_r`: factor with 5 numeric levels and labels that are ordinally ranked from least recent to most recent response option along the 1 - 5 scale
+
+**`Q30J_suic_thnk`**
+
+```{r, results='asis'}
+original_var <- "NQ30J"
+new_var <- "Q30J_suic_thnk"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+**`Q30J_suic_thnk_r`**
+
+```{r, results='asis'}
+new_var <- "Q30J_suic_thnk_r"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+\pagebreak
+
+## Attempted suicide(`NQ30K`)
+
+New variables: 
+
+- `Q30K_suic_try`: factor with 5 numeric levels corresponding to the response options in the original rank order.
+- `Q30K_suic_try_r`: factor with 5 numeric levels and labels that are ordinally ranked from least recent to most recent response option along the 1 - 5 scale
+
+**`Q30K_suic_try`**
+
+```{r, results='asis'}
+original_var <- "NQ30K"
+new_var <- "Q30K_suic_try"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+**`Q30K_suic_try_r`**
+
+```{r, results='asis'}
+new_var <- "Q30K_suic_try_r"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+\pagebreak
+
+# Diagnosed with or Treated Mental Health Disorders
+## Executive Summary
+Two new variables were generated for each mental health disorder queried in the surveys. The first was essentially a basic recoded variable with a standardized format for the response labels. The second was a dichotomized tranformation of the original such that a response of `No` (see below) was assigned a 1 and all other responses were assigned a value of 1^[In taking this approach we created a set of variables from the originals that indicated if a respondent was diagnosed and/or treated for a given mental health disorder in the past year.]
+
+The response options for this item set were: 
+
+1. No
+2. Yes, diagnosed but not treated
+3. Yes, treated with medication
+4. Yes, treated with psychotherapy
+5. Yes, treated with medication and psychotherapy
+6. Yes, other treatment
+
+## Diagnosed with or treated for anoxeria in past 12 months (`NQ31A1`)
+
+New variables: 
+
+- `Q31A_anorexia`: character variable containing 6 possible categorical response options as strings. 
+- `Q31A_anorexia_dich`: a binary (0, 1) variable where 1 is assigned to any case with an affirmative response to either diagnosis with or treatment for the disorder in the past 12 months. Otherwise the case is assigned a 0. Missing values should be retained as missing.
+
+**`Q31A_anorexia`**^[Orientation of the tables changed in this section to accommodate more and longer response options]
+
+```{r, results='asis'}
+original_var <- "NQ31A1"
+new_var <- "Q31A_anorexia"
+create_latex_crosstabs(complete_df, new_var, original_var)
+```
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+**`Q31A_anorexia_dich`**
+
+```{r, results='asis'}
+original_var <- "Q31A_anorexia"
+new_var <- "Q31A_anorexia_dich"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+\pagebreak
+
+## Diagnosed with or treated for anxiety in past 12 months (`NQ31A2`)
+
+New variables: 
+
+- `Q31A_anxiety`: character variable containing 6 possible categorical response options as strings. 
+- `Q31A_anxiety_dich`: a binary (0, 1) variable where 1 is assigned to any case with an affirmative response to either diagnosis with or treatment for the disorder in the past 12 months. Otherwise the case is assigned a 0. Missing values should be retained as missing.
+
+**`Q31A_anxiety`**
+
+```{r, results='asis'}
+original_var <- "NQ31A2"
+new_var <- "Q31A_anxiety"
+create_latex_crosstabs(complete_df, new_var, original_var)
+```
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+**`Q31A_anxiety_dich`**
+
+```{r, results='asis'}
+original_var <- "Q31A_anxiety"
+new_var <- "Q31A_anxiety_dich"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+\pagebreak
+
+## Diagnosed with or treated for ADHD in past 12 months (`NQ31A3`)
+
+New variables: 
+
+- `Q31A_adhd`: character variable containing 6 possible categorical response options as strings. 
+- `Q31A_adhd_dich`: a binary (0, 1) variable where 1 is assigned to any case with an affirmative response to either diagnosis with or treatment for the disorder in the past 12 months. Otherwise the case is assigned a 0. Missing values should be retained as missing.
+
+**`Q31A_adhd`**
+
+```{r, results='asis'}
+original_var <- "NQ31A3"
+new_var <- "Q31A_adhd"
+create_latex_crosstabs(complete_df, new_var, original_var)
+```
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+**`Q31A_adhd_dich`**
+
+```{r, results='asis'}
+original_var <- "Q31A_adhd"
+new_var <- "Q31A_adhd_dich"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+\pagebreak
+
+## Diagnosed with or treated for bipolar disorder in past 12 months (`NQ31A4`)
+
+New variables: 
+
+- `Q31A_bipolar`: character variable containing 6 possible categorical response options as strings. 
+- `Q31A_bipolar_dich`: a binary (0, 1) variable where 1 is assigned to any case with an affirmative response to either diagnosis with or treatment for the disorder in the past 12 months. Otherwise the case is assigned a 0. Missing values should be retained as missing.
+
+**`Q31A_bipolar`**
+
+```{r, results='asis'}
+original_var <- "NQ31A4"
+new_var <- "Q31A_bipolar"
+create_latex_crosstabs(complete_df, new_var, original_var)
+```
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+**`Q31A_bipolar_dich`**
+
+```{r, results='asis'}
+original_var <- "Q31A_bipolar"
+new_var <- "Q31A_bipolar_dich"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+\pagebreak
+
+## Diagnosed with or treated for bulimia in past 12 months (`NQ31A5`)
+
+New variables: 
+
+- `Q31A_bulimia`: character variable containing 6 possible categorical response options as strings. 
+- `Q31A_bulimia_dich`: a binary (0, 1) variable where 1 is assigned to any case with an affirmative response to either diagnosis with or treatment for the disorder in the past 12 months. Otherwise the case is assigned a 0. Missing values should be retained as missing.
+
+**`Q31A_bulimia`**
+
+```{r, results='asis'}
+original_var <- "NQ31A5"
+new_var <- "Q31A_bulimia"
+create_latex_crosstabs(complete_df, new_var, original_var)
+```
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+**`Q31A_bulimia_dich`**
+
+```{r, results='asis'}
+original_var <- "Q31A_bulimia"
+new_var <- "Q31A_bulimia_dich"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+\pagebreak
+
+## Diagnosed with or treated for depression in past 12 months (`NQ31A6`)
+
+New variables: 
+
+- `Q31A_depression`: character variable containing 6 possible categorical response options as strings. 
+- `Q31A_depression_dich`: a binary (0, 1) variable where 1 is assigned to any case with an affirmative response to either diagnosis with or treatment for the disorder in the past 12 months. Otherwise the case is assigned a 0. Missing values should be retained as missing.
+
+**`Q31A_depression`**
+
+```{r, results='asis'}
+original_var <- "NQ31A6"
+new_var <- "Q31A_depression"
+create_latex_crosstabs(complete_df, new_var, original_var)
+```
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+**`Q31A_depression_dich`**
+
+```{r, results='asis'}
+original_var <- "Q31A_depression"
+new_var <- "Q31A_depression_dich"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+\pagebreak
+
+## Diagnosed with or treated for insomnia in past 12 months (`NQ31A7`)
+
+New variables: 
+
+- `Q31A_insomnia`: character variable containing 6 possible categorical response options as strings. 
+- `Q31A_insomnia_dich`: a binary (0, 1) variable where 1 is assigned to any case with an affirmative response to either diagnosis with or treatment for the disorder in the past 12 months. Otherwise the case is assigned a 0. Missing values should be retained as missing.
+
+**`Q31A_insomnia`**
+
+```{r, results='asis'}
+original_var <- "NQ31A7"
+new_var <- "Q31A_insomnia"
+create_latex_crosstabs(complete_df, new_var, original_var)
+```
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+**`Q31A_insomnia_dich`**
+
+```{r, results='asis'}
+original_var <- "Q31A_insomnia"
+new_var <- "Q31A_insomnia_dich"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+\pagebreak
+
+## Diagnosed with or treated for other sleep disorders in past 12 months (`NQ31A8`)
+
+New variables: 
+
+- `Q31A_othrsleep`: character variable containing 6 possible categorical response options as strings. 
+- `Q31A_othrsleep_dich`: a binary (0, 1) variable where 1 is assigned to any case with an affirmative response to either diagnosis with or treatment for the disorder in the past 12 months. Otherwise the case is assigned a 0. Missing values should be retained as missing.
+
+**`Q31A_othrsleep`**
+
+```{r, results='asis'}
+original_var <- "NQ31A8"
+new_var <- "Q31A_othrsleep"
+create_latex_crosstabs(complete_df, new_var, original_var)
+```
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+**`Q31A_othrsleep_dich`**
+
+```{r, results='asis'}
+original_var <- "Q31A_othrsleep"
+new_var <- "Q31A_othrsleep_dich"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+\pagebreak
+
+## Diagnosed with or treated for obssessive compulsive disorder in past 12 months (`NQ31B1`)
+
+New variables: 
+
+- `Q31B_ocd`: character variable containing 6 possible categorical response options as strings. 
+- `Q31B_ocd_dich`: a binary (0, 1) variable where 1 is assigned to any case with an affirmative response to either diagnosis with or treatment for the disorder in the past 12 months. Otherwise the case is assigned a 0. Missing values should be retained as missing.
+
+**`Q31B_ocd`**
+
+```{r, results='asis'}
+original_var <- "NQ31B1"
+new_var <- "Q31B_ocd"
+create_latex_crosstabs(complete_df, new_var, original_var)
+```
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+**`Q31B_ocd_dich`**
+
+```{r, results='asis'}
+original_var <- "Q31B_ocd"
+new_var <- "Q31B_ocd_dich"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+\pagebreak
+
+## Diagnosed with or treated for panic attacks in past 12 months (`NQ31B2`)
+
+New variables: 
+
+- `Q31B_panic`: character variable containing 6 possible categorical response options as strings. 
+- `Q31B_panic_dich`: a binary (0, 1) variable where 1 is assigned to any case with an affirmative response to either diagnosis with or treatment for the disorder in the past 12 months. Otherwise the case is assigned a 0. Missing values should be retained as missing.
+
+**`Q31B_panic`**
+
+```{r, results='asis'}
+original_var <- "NQ31B2"
+new_var <- "Q31B_panic"
+create_latex_crosstabs(complete_df, new_var, original_var)
+```
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+**`Q31B_panic_dich`**
+
+```{r, results='asis'}
+original_var <- "Q31B_panic"
+new_var <- "Q31B_panic_dich"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+\pagebreak
+
+## Diagnosed with or treated for phobia in past 12 months (`NQ31B3`)
+
+New variables: 
+
+- `Q31B_phobia`: character variable containing 6 possible categorical response options as strings. 
+- `Q31B_phobia_dich`: a binary (0, 1) variable where 1 is assigned to any case with an affirmative response to either diagnosis with or treatment for the disorder in the past 12 months. Otherwise the case is assigned a 0. Missing values should be retained as missing.
+
+**`Q31B_phobia`**
+
+```{r, results='asis'}
+original_var <- "NQ31B3"
+new_var <- "Q31B_phobia"
+create_latex_crosstabs(complete_df, new_var, original_var)
+```
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+**`Q31B_phobia_dich`**
+
+```{r, results='asis'}
+original_var <- "Q31B_phobia"
+new_var <- "Q31B_phobia_dich"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+\pagebreak
+
+## Diagnosed with or treated for schizophreniain past 12 months (`NQ31B4`)
+
+New variables: 
+
+- `Q31B_schizo`: character variable containing 6 possible categorical response options as strings. 
+- `Q31B_schizo_dich`: a binary (0, 1) variable where 1 is assigned to any case with an affirmative response to either diagnosis with or treatment for the disorder in the past 12 months. Otherwise the case is assigned a 0. Missing values should be retained as missing.
+
+**`Q31B_schizo`**
+
+```{r, results='asis'}
+original_var <- "NQ31B4"
+new_var <- "Q31B_schizo"
+create_latex_crosstabs(complete_df, new_var, original_var)
+```
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+**`Q31B_schizo_dich`**
+
+```{r, results='asis'}
+original_var <- "Q31B_schizo"
+new_var <- "Q31B_schizo_dich"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+\pagebreak
+
+## Diagnosed with or treated for substance use or addiction in past 12 months (`NQ31B5`)
+
+New variables: 
+
+- `Q31B_substance`: character variable containing 6 possible categorical response options as strings. 
+- `Q31B_substance_dich`: a binary (0, 1) variable where 1 is assigned to any case with an affirmative response to either diagnosis with or treatment for the disorder in the past 12 months. Otherwise the case is assigned a 0. Missing values should be retained as missing.
+
+**`Q31B_substance`**
+
+```{r, results='asis'}
+original_var <- "NQ31B5"
+new_var <- "Q31B_substance"
+create_latex_crosstabs(complete_df, new_var, original_var)
+```
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+**`Q31B_substance_dich`**
+
+```{r, results='asis'}
+original_var <- "Q31B_substance"
+new_var <- "Q31B_substance_dich"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+\pagebreak
+
+## Diagnosed with or treated for other addictions in past 12 months (`NQ31B6`)
+
+New variables: 
+
+- `Q31B_othraddctn`: character variable containing 6 possible categorical response options as strings. 
+- `Q31B_othraddctn_dich`: a binary (0, 1) variable where 1 is assigned to any case with an affirmative response to either diagnosis with or treatment for the disorder in the past 12 months. Otherwise the case is assigned a 0. Missing values should be retained as missing.
+
+**`Q31B_othraddctn`**
+
+```{r, results='asis'}
+original_var <- "NQ31B6"
+new_var <- "Q31B_othraddctn"
+create_latex_crosstabs(complete_df, new_var, original_var)
+```
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+**`Q31B_othraddctn_dich`**
+
+```{r, results='asis'}
+original_var <- "Q31B_othraddctn"
+new_var <- "Q31B_othraddctn_dich"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+\pagebreak
+
+## Diagnosed with or treated for obssessive compulsive disorder in past 12 months (`NQ31B7`)
+
+New variables: 
+
+- `Q31B_othrmnthlth`: character variable containing 6 possible categorical response options as strings. 
+- `Q31B_othrmnthlth_dich`: a binary (0, 1) variable where 1 is assigned to any case with an affirmative response to either diagnosis with or treatment for the disorder in the past 12 months. Otherwise the case is assigned a 0. Missing values should be retained as missing.
+
+**`Q31B_othrmnthlth`**
+
+```{r, results='asis'}
+original_var <- "NQ31B7"
+new_var <- "Q31B_othrmnthlth"
+create_latex_crosstabs(complete_df, new_var, original_var)
+```
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+**`Q31B_othrmnthlth_dich`**
+
+```{r, results='asis'}
+original_var <- "Q31B_othrmnthlth"
+new_var <- "Q31B_othrmnthlth_dich"
+create_latex_crosstabs(complete_df, original_var, new_var)
+```
+
+```{r}
+orig_var_na <- is.na(complete_df[[original_var]])
+new_var_na <- is.na(complete_df[[new_var]])
+testthat::expect_equal(new_var_na, orig_var_na)
+```
+
+\pagebreak

@@ -222,7 +222,7 @@ new_var <- "Q54_black"
 create_latex_crosstabs(complete_df, original_var, new_var)
 ```
 
-**`race_ethn` vs `Q54_hispanic`**^[Every individual who identified as Hispanic or Latino/a in the original data is present in the "1" column. We can see that 103,351 of those individuals selected Hispanic or Latino/a as their **_sole_** racial/ethnic identity. An additional 16,337 identified with **_at least one other_** racial/ethnic identity.]
+**`race_ethn` vs `Q54_hispanic`**^[Every individual who identified as Hispanic or Latino/a in the original data is present in the "1" column. We can see that 103,351 of those individuals selected Hispanic or Latino/a as their **_sole_** racial/ethnic identity. An additional 42,722 identified with **_at least one other_** racial/ethnic identity.]
 ```{r, results='asis'}
 original_var <- "race_ethn"
 new_var <- "Q54_hispanic"

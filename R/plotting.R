@@ -1,4 +1,6 @@
 # Utilities for creating project plots - exploratory and final
+library(corrr)
+library(ggraph)
 library(tidyverse)
 
 #' Creates exploratory plots for NSDUH raw and weighted outputs
@@ -34,4 +36,75 @@ create_nsduh_trend_plots <- function(df, xvar, yvar, yvar_hits, weight_var, mask
               legend.title = element_blank())
     
     return(g)
+}
+
+#' Creates correlation network graph
+#'
+#' @param df \code{data.frame} containing target variables
+#' 
+#' @param vars character vector of variables to generate correlation networks from
+#' 
+#' @param cor_method character indicating correlation type (e.g. "spearman", "pearson"). Value is passed to 
+#' \code{corrr:correlate()}
+#' 
+#' @param cor_cutoff value between 0 and 1. Applies an absolute threshold when creating the correlation network. Strong
+#' negative correlations and strong positive correlations will be part of the same network. 
+#' 
+#' @param label_map (optional) a named vector in which the names are the variable names passed in via the \code{vars} 
+#' parameter and the values are the preferred renames. Helpful from translating confusing variable names to labels that
+#' contain a more obvious meaning. 
+
+create_cor_network_plot <- function(df, vars, cor_method, label_map, color_map, cor_cutoff) {
+    if(is.null(cor_cutoff)) cor_cutoff <- 0
+    
+    cor_matrix <- df %>% 
+        select(all_of(vars)) %>% 
+        mutate_all(as.numeric) %>% 
+        correlate(method = cor_method, use = 'pairwise.complete.obs') %>% 
+        shave() %>% 
+        stretch(na.rm = TRUE) %>% 
+        mutate(
+            x = str_replace_all(x, pattern = label_map), 
+            y = str_replace_all(y, pattern = label_map)
+        ) %>% 
+        filter(abs(r) >= cor_cutoff)
+    
+    cor_tbl_graph<- cor_matrix %>% 
+        as_tbl_graph(directed = FALSE)
+    
+    node_from <- cor_tbl_graph %>%
+        as_tibble() %>%
+        mutate(
+            from = row_number(), 
+            from_name = name
+        ) %>% 
+        select(from_name, from)
+    
+    node_to <- cor_tbl_graph %>%
+        as_tibble() %>%
+        mutate(
+            to = row_number(), 
+            to_name = name
+        ) %>% 
+        select(to_name, to)
+    
+    p <- 
+    cor_tbl_graph %>% 
+        activate(edges) %>% 
+        left_join(node_from) %>% 
+        left_join(node_to) %>% 
+    ggraph(layout = 'linear', circular = TRUE) +
+        geom_edge_arc(aes(width = r, color = from_name, alpha = r), show.legend = FALSE) +
+        geom_edge_arc(aes(width = r, color = to_name, alpha = r), show.legend = FALSE) +
+        theme_graph() +
+        scale_color_manual(values = color_map) +
+        scale_edge_color_manual(values = color_map) +
+        scale_alpha_continuous(range = c(0.05, 0.40))
+    
+    p <- p + 
+        geom_node_text(
+        aes(label = name), size = 4, repel = TRUE, check_overlap = TRUE, 
+        nudge_x = p$data$x *.35, nudge_y = p$data$y *.2)
+    
+    return(p)
 }

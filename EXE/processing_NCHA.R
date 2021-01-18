@@ -111,18 +111,18 @@ complete_df <- cbind(combined_spss, complete_study_df)
 
 # And now to write out all of the files
 write.csv(grads_only_study_df,
-          "{DATA_DIR}/NCHA-II/grad_students_modeling_vars.csv" %>% glue(), 
+          "{DATA_DIR}/NCHA-II/grad_students_master_vars_{Sys.Date()}.csv" %>% glue(), 
           row.names = FALSE)
 
 write.csv(complete_study_df,
-          "{DATA_DIR}/NCHA-II/all_students_modeling_vars.csv" %>% glue(), 
+          "{DATA_DIR}/NCHA-II/all_students_master_vars_{Sys.Date()}.csv" %>% glue(), 
           row.names = FALSE)
 
 write_sav(grads_only_study_df,
-          "{DATA_DIR}/NCHA-II/grad_students_modeling_vars.sav" %>% glue())
+          "{DATA_DIR}/NCHA-II/grad_students_master_vars_{Sys.Date()}.sav" %>% glue())
 
 write_sav(complete_study_df,
-          "{DATA_DIR}/NCHA-II/all_students_modeling_vars.sav" %>% glue())
+          "{DATA_DIR}/NCHA-II/all_students_master_vars_{Sys.Date()}.sav" %>% glue())
 
 save(list = c("complete_study_df", "complete_df", "grads_only_study_df"), 
-     file = "{DATA_DIR}/NCHA-II/ncha_study_data.RData" %>% glue())
+     file = "{DATA_DIR}/NCHA-II/ncha_study_data_{Sys.Date()}.RData" %>% glue())

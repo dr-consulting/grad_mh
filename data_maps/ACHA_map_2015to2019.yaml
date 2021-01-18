@@ -421,3 +421,43 @@ size:
 PERMID:
     study_name: school_id
     text: PERMID is a unique variable used to identify cases from the same institution acorss multiple periods
+
+TYPE: 
+    study_name: school_type
+    text: Enrolled in a 2 or 4 year program
+    responses: 
+        1: "2-year"
+        2: "4-year"
+
+LOCALE: 
+    study_name: local_population
+    text: Population of surrounding region near campus
+    responses: 
+        1: "over 500,000"
+        2: "250,000-499,999"
+        3: "50,000-249,999"
+        4: "10,000 – 49,999"
+        5: "2,500-9,999"
+        6: "under 2,500"
+
+REGION: 
+    study_name: us_region
+    text: U.S. regional location of campus
+    responses: 
+        1: "Northeast"
+        2: "Midwest"
+        3: "South"
+        4: "West"
+        5: "Outside U.S."
+
+# Capitalized in the raw data set for just II-C
+CARNCAT: 
+    study_name: carnegie_category
+    text: Basic Carnegie categorization for school
+    responses:
+        1: "Associates Colleges"
+        2: "Baccalaureate Colleges"
+        3: "Masters Colleges and Universities"
+        4: "Research Institutions"
+        5: "Special Focus Institutions"
+        6: "Miscellaneous/Not Classified"

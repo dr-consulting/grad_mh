@@ -1,6 +1,11 @@
 \usepackage{tcolorbox}
 \usepackage{xcolor}
 \usepackage{dcolumn}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+
+\fancyfoot[L]{\includegraphics[width=3cm]{logo-dead-8.png}}
 
 \definecolor{blueback}{HTML}{F7FBFF}
 \definecolor{blueframe}{HTML}{426ebd}
@@ -11,3 +16,8 @@
   coltext=black,
   boxsep=5pt,
   arc=0pt}
+
+\hypersetup{% force hyperlink colors inside document. 
+  colorlinks=true, 
+  linkcolor=blue,
+  linkbordercolor=blue}

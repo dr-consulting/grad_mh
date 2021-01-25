@@ -212,5 +212,114 @@ pca_w_horns_pa <- function(df, tbl_cap_base, n_sims = 1000, perc = .05, rotation
 }
 
 
+#' One factor error covariance model generation helper
+#' 
+
+find_single_factor_final_model <- function(base_model, data, ordered_vars, p_thresh = .01) {
+    message("Fitting base model")
+    fit_base <- lavaan::cfa(base_model, data=data, ordered=ordered_vars, std.lv=TRUE)
+    mod_index_base <- lavaan::modificationindices(fit_base) %>% 
+        arrange(desc(mi)) %>% 
+        filter(op == "~~")
+    new_covar <- paste(mod_index_base[1, c('lhs', 'op', 'rhs')], collapse = "")
+    
+    message("Fitting first covariate model")
+    covar_model <- paste0(base_model, "\n", new_covar)
+    fit_covar <- lavaan::cfa(covar_model, data=data, ordered=ordered_vars, std.lv=TRUE)
+    p_val <- anova(fit_base, fit_covar)[["Pr(>Chisq)"]][2]
+    
+    while(p_val < p_thresh) {
+        if(exists('fit_covar_i')) {
+            fit_covar <- fit_covar_i
+        }
+        
+        mod_index_covar <- lavaan::modificationindices(fit_covar) %>% 
+            arrange(desc(mi))  %>% 
+            filter(op == "~~")
+        new_covar <- paste(mod_index_covar[1, c('lhs', 'op', 'rhs')], collapse = "")
+        
+        message(paste("Fitting model with added covariance:", new_covar))
+        
+        covar_model <- paste0(covar_model, "\n", new_covar)
+        fit_covar_i <- lavaan::cfa(covar_model, data=data, ordered=ordered_vars, std.lv=TRUE)
+        p_val <- anova(fit_covar_i, fit_covar)[["Pr(>Chisq)"]][2]
+    }
+    result_list <- list()
+    result_list[["base_fit"]] <- fit_base
+    result_list[["fit_covar"]] <- NULL
+    if(exists("fit_covar_i")) {
+        result_list[["fit_covar"]] <- fit_covar
+    }
+    
+    return(result_list)
+}
 
 
+#' Two factor error covariance model generator 
+#' 
+
+find_dual_factor_final_model <- function(base_model, data, ordered_vars, valid_covars, invalid_covars, p_thresh = .01) {
+    `%notin%` <- Negate(`%in%`)
+    message("Fitting base model")
+    fit_base <- lavaan::cfa(base_model, data=data, ordered=ordered_vars, std.lv=TRUE)
+    mod_index_base <- lavaan::modificationindices(fit_base) %>% 
+        arrange(desc(mi)) %>% 
+        filter(op == "~~" & lhs %in% valid_covars & rhs %in% valid_covars)
+    new_covars <- paste(mod_index_base[['lhs']], mod_index_base[['rhs']], sep = "~~")
+    new_covar <- new_covars[new_covars %notin% invalid_covars][1]
+    
+    message("Fitting first covariate model")
+    covar_model <- paste0(base_model, "\n", new_covar)
+    fit_covar <- lavaan::cfa(covar_model, data=data, ordered=ordered_vars, std.lv=TRUE)
+    p_val <- anova(fit_base, fit_covar)[["Pr(>Chisq)"]][2]
+    
+    if(is.null(invalid_covars)) invalid_covars <- c()
+    
+    while(p_val < p_thresh) {
+        if(exists('fit_covar_i')) {
+            fit_covar <- fit_covar_i
+        }
+        mod_index_covar <- lavaan::modificationindices(fit_covar) %>% 
+            arrange(desc(mi)) %>% 
+            filter(op == "~~" & lhs %in% valid_covars & rhs %in% valid_covars)
+        new_covars <- paste(mod_index_covar[['lhs']], mod_index_covar[['rhs']], sep = "~~")
+        new_covar <- new_covars[new_covars %notin% invalid_covars][1]
+        
+        if(is.na(new_covar)) {
+            # Force a stop
+            p_val <- 999
+        } else {
+            message(paste("Fitting model with added covariance:", new_covar))
+            
+            covar_model <- paste0(covar_model, "\n", new_covar)
+            fit_covar_i <- lavaan::cfa(covar_model, data=data, ordered=ordered_vars, std.lv=TRUE)
+            p_val <- anova(fit_covar_i, fit_covar)[["Pr(>Chisq)"]][2]
+        }
+    }
+    
+    result_list <- list()
+    result_list[["base_fit"]] <- fit_base
+    result_list[["fit_covar"]] <- NULL
+    if(exists("fit_covar_i")) {
+        result_list[["fit_covar"]] <- fit_covar
+    }
+    result_list[["invalid_covars"]] <- invalid_covars
+    return(result_list)
+}
+
+
+#' Calculates coefficient given a lambda matrix returned from a fitted lavaan object - or any other loading matrix
+
+coefficient_H <- function(lamdba){
+    lambda <- as.matrix(lamdba)
+    H_result <- c()
+    for(i in 1:ncol(lambda)){
+        l <- lambda[,i][lambda[,i] != 0]
+        numerator <- sum(l^2/(1-l^2))
+        denominator <- 1 + numerator
+        H <- numerator/denominator
+        H_result <- c(H_result, H)
+        names(H_result)[i] <- paste0("F", i)
+    }
+    return(H_result)
+}

@@ -11,3 +11,5 @@
 *.log
 *.html
 *.csv
+*/*_cache/*
+*/*latex/*

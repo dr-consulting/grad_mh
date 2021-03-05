@@ -21,3 +21,18 @@ base_palette <- c(line = '#426EBD',
 analogous_palette <- c(blue = '#426EBD', 
                        purple = "#6942bd", 
                        green = "#42bd92")
+
+PRIOR_CONFIG <- c(
+    brms::set_prior(
+        'normal(0, 2)',
+        class = 'b'
+    ), 
+    brms::set_prior(
+        'lognormal(-.5, .5)',
+        class = 'sd'
+    ), 
+    brms::set_prior(
+        'lkj(2)',
+        class = 'cor'
+    )
+)

@@ -11,9 +11,21 @@ sapply(list.files(R_DIR, full.names = TRUE), source)
 acha_F08_S11 <- load_and_prep_ACHA_file("{DATA_DIR}/ACHA-II/ACHA-II_F08_S11.sav" %>% glue())
 acha_F08_S11_df_list <- create_study_datasets(acha_F08_S11, '{MAPS_DIR}/ACHA_map_2008to2011.yaml' %>% glue())
 
+# Adding in a blank "sex" variable to make things easier down the road
+acha_F08_S11_df_list[["base_df"]] <- acha_F08_S11_df_list[["base_df"]] %>% 
+    mutate(
+        Q47_sex = NA
+    )
+
 # 2011 - 2015 data 
 acha_F11_S15 <- load_and_prep_ACHA_file("{DATA_DIR}/ACHA-II/ACHA-II_F11_S15.sav" %>% glue())
 acha_F11_S15_df_list <- create_study_datasets(acha_F11_S15, '{MAPS_DIR}/ACHA_map_2011to2015.yaml' %>% glue())
+
+# Adding in a blank "sex" variable to make things easier down the road
+acha_F11_S15_df_list[["base_df"]] <- acha_F11_S15_df_list[["base_df"]] %>% 
+    mutate(
+        Q47_sex = NA
+    )
 
 # 2015 - 2019 data 
 acha_F15_S19 <- load_and_prep_ACHA_file("{DATA_DIR}/ACHA-II/ACHA-II_F15_S19.sav" %>% glue())
@@ -29,6 +41,7 @@ acha_F15_S19_df_list[["base_df"]] <- acha_F15_S19_df_list[["base_df"]] %>%
 # Extracting Study variables - Using the ACHA map for 2008 to 2011
 acha_map_F08_S11 <- yaml::read_yaml("{MAPS_DIR}/ACHA_map_2008to2011.yaml" %>% glue())
 study_variables <- lapply(acha_map_F08_S11, function(x) x[['study_name']]) %>% unlist()
+study_variables <- c(study_variables, "Q47_sex")
 
 acha_F08_S11_df_list[["study_df"]] <- acha_F08_S11_df_list[["base_df"]][study_variables]
 acha_F11_S15_df_list[["study_df"]] <- acha_F11_S15_df_list[["base_df"]][study_variables]
@@ -45,6 +58,8 @@ complete_study_df <- rbind(
     acha_F15_S19_df_list[["study_df"]]
 ) %>% 
     mutate(
+        # DeYoung wants PERMID name to be present
+        PERMID = school_id,
         # releveled so Excellent is highest and Poor is lowest
         global_health_r = ifelse(global_health == "Don't know", NA, global_health) %>% 
             forcats::fct_relevel(., "Poor", "Fair", "Good", "Very good", "Excellent"), 
@@ -113,16 +128,43 @@ complete_study_df <- rbind(
                                                  "Masters Colleges and Universities",
                                                  "Research Institutions",
                                                  "Special Focus Institutions",
-                                                 "Miscellaneous/Not Classified")
+                                                 "Miscellaneous/Not Classified"), 
+        academic_year = case_when(
+            survey_period %in% c("Fall 2008", "Spring 2009") ~ "AY2008", 
+            survey_period %in% c("Fall 2009", "Spring 2010") ~ "AY2009",
+            survey_period %in% c("Fall 2010", "Spring 2011") ~ "AY2010",
+            survey_period %in% c("Fall 2011", "Spring 2012") ~ "AY2011",
+            survey_period %in% c("Fall 2012", "Spring 2013") ~ "AY2012",
+            survey_period %in% c("Fall 2013", "Spring 2014") ~ "AY2013",
+            survey_period %in% c("Fall 2014", "Spring 2015") ~ "AY2014",
+            survey_period %in% c("Fall 2015", "Spring 2016") ~ "AY2015",
+            survey_period %in% c("Fall 2016", "Spring 2017") ~ "AY2016",
+            survey_period %in% c("Fall 2017", "Spring 2018") ~ "AY2017",
+            survey_period %in% c("Fall 2018", "Spring 2019") ~ "AY2018"
+        )
     )
 
 # Calculate a total and any diagnosis using row
-nsduh_mh_dx_cols <- complete_study_df %>% 
-    select(starts_with('Q31') & ends_with('_dich'), -contains('substance'), -contains('othraddctn'), -contains('adhd')) %>% 
-    colnames()
+# NSDUH "total" dx and "any" dx columns
+total_dx_nsduh_cols <- complete_study_df %>% 
+    select(starts_with('Q31') & ends_with("_dich")) %>% 
+    select(-contains("substance"), -contains("adhd")) %>% 
+    names()
 
-complete_study_df[["total_dx_nsduh"]] <- rowSums(complete_study_df[nsduh_mh_dx_cols], na.rm = TRUE)
+# NHCA "total" dx and "any" dx columns
+total_dx_ncha_cols <- complete_study_df %>% 
+    select(starts_with('Q31') & ends_with("_dich")) %>% 
+    names()
+
+complete_study_df[["total_dx_nsduh"]] <- rowSums(complete_study_df[total_dx_nsduh_cols], na.rm = TRUE)
+complete_study_df[["total_dx_nsduh"]] <- ifelse(rowSums(is.na(complete_study_df[total_dx_nsduh_cols])) == length(total_dx_nsduh_cols), 
+                                               NA, complete_study_df[["total_dx_nsduh"]])
 complete_study_df[["any_dx_nsduh"]] <- ifelse(complete_study_df[["total_dx_nsduh"]] > 0, 1, 0)
+
+complete_study_df[["total_dx"]] <- rowSums(complete_study_df[total_dx_ncha_cols], na.rm = TRUE)
+complete_study_df[["total_dx"]] <- ifelse(rowSums(is.na(complete_study_df[total_dx_ncha_cols])) == length(total_dx_ncha_cols), 
+                                          NA, complete_study_df[["total_dx"]])
+complete_study_df[["any_dx"]] <- ifelse(complete_study_df[["total_dx"]] > 0, 1, 0)
 
 # Select only the graduate students from the full data sets
 grads_only_study_df <- complete_study_df %>% 

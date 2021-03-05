@@ -1,5 +1,5 @@
 # Be sure to update the data version to the appropriate date before running
-DATA_VERSION <- "2021-01-15"
+DATA_VERSION <- "2021-02-04"
 
 library(glue)
 library(tidyverse)
@@ -27,36 +27,13 @@ grads_model_base <- grads_only_study_df %>%
                .fns = list(two_weeks = ~ifelse(. == 'Yes, in the last 2 weeks', 1, 0)), 
                .names = "{col}_2wks"), 
         across(starts_with('Q30') & ends_with('_r'), 
-               .fns = list(thirty_days = ~ifelse(. == 'Yes, in the last 2 weeks' | 
-                                                     . == 'Yes, in the last 30 days', 1, 0)), 
-               .names = "{col}_30days"), 
-        across(starts_with('Q30') & ends_with('_r'), 
                .fns = list(year = ~ifelse(. == 'Yes, in the last 2 weeks' | 
                                               . == 'Yes, in the last 30 days' |
                                               . == 'Yes, in the last 12 months', 1, 0)), 
                .names = "{col}_12mos")
-    )
-
-# NSDUH "total" dx and "any" dx columns
-total_dx_nsduh_cols <- grads_model_base %>% 
-    select(starts_with('Q31') & ends_with("_dich")) %>% 
-    select(-contains("substance"), -contains("adhd")) %>% 
-    names()
-
-grads_model_base[["total_dx_nsduh"]] <- rowSums(grads_model_base[total_dx_nsduh_cols], na.rm = TRUE)
-grads_model_base[["total_dx_nsduh"]] <- ifelse(rowSums(is.na(grads_model_base[total_dx_nsduh_cols])) == length(total_dx_nsduh_cols), 
-                                               NA, grads_model_base[["total_dx_nsduh"]])
-grads_model_base[["any_dx_nsduh"]] <- ifelse(grads_model_base[["total_dx_nsduh"]] > 0, 1, 0)
-
-# NHCA "total" dx and "any" dx columns
-total_dx_ncha_cols <- grads_model_base %>% 
-    select(starts_with('Q31') & ends_with("_dich")) %>% 
-    names()
-
-grads_model_base[["total_dx_ncha"]] <- rowSums(grads_model_base[total_dx_ncha_cols], na.rm = TRUE)
-grads_model_base[["total_dx_ncha"]] <- ifelse(rowSums(is.na(grads_model_base[total_dx_ncha_cols])) == length(total_dx_ncha_cols), 
-                                               NA, grads_model_base[["total_dx_ncha"]])
-grads_model_base[["any_dx_ncha"]] <- ifelse(grads_model_base[["total_dx_ncha"]] > 0, 1, 0)
+    ) %>% 
+    filter(us_region != "Outside U.S.")
+    
 
 # Add quadratic time slp 
 grads_model_base[["quad_c_Time"]] <- grads_model_base[["c_Time"]]^2
@@ -65,11 +42,11 @@ grads_model_base[["quad_c_Time"]] <- grads_model_base[["c_Time"]]^2
 grads_model_base[["c_Q46_age"]] <- grads_model_base[["Q46_age"]] - mean(grads_model_base[["Q46_age"]], na.rm = TRUE)
 
 write.csv(grads_model_base,
-          "{DATA_DIR}/ACHA-II/grad_students_study_base_{DATA_VERSION}.csv" %>% glue(), 
+          "{DATA_DIR}/ACHA-II/grad_students_study_base_{DATA_VERSION}_v2.csv" %>% glue(), 
           row.names = FALSE)
 
 write_sav(grads_model_base,
-          "{DATA_DIR}/ACHA-II/grad_students_study_base_{DATA_VERSION}.sav" %>% glue())
+          "{DATA_DIR}/ACHA-II/grad_students_study_base_{DATA_VERSION}_v2.sav" %>% glue())
 
 save(list = c("grads_model_base", "DATA_VERSION"), 
      file = "{DATA_DIR}/ACHA-II/acha_grad_students_base_{DATA_VERSION}.RData" %>% glue())

@@ -7,10 +7,14 @@ DATA_DIR <- paste0(LOCAL_REPO, '/', 'data')
 R_DIR <- paste0(LOCAL_REPO, '/', 'R')
 MAPS_DIR <- paste0(LOCAL_REPO, '/', 'data_maps')
 POSTERIOR_OUTPUTS <- paste0(DATA_DIR, "/", "OUTPUTS")
+PLOT_OUTPUT <- paste0(LOCAL_REPO, '/outputs/figures')
+SUMMARY_OUTPUT <- paste0(LOCAL_REPO, '/outputs/tables')
 
 # Create a directory at the location above if one does not already exist
-if(!dir.exists(POSTERIOR_OUTPUTS)) {
-    dir.create(POSTERIOR_OUTPUTS)
+for(fldr in c(POSTERIOR_OUTPUTS, PLOT_OUTPUT, SUMMARY_OUTPUT)) {
+    if(!dir.exists(fldr)) {
+        dir.create(fldr, recursive = TRUE)
+    }
 }
 
 NSDUH_MISSING_CODES <- c(85, 89, 94, 97, 98, 99)

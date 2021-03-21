@@ -99,6 +99,7 @@ helper_recode_func <- function(df, data_map, recode_names, study_names) {
                 study_df = study_df))
 }
 
+
 #' Strips attributes read in from read_spss function. Adapted from sjlabelled package
 #' 
 #' @param df a \code{data.frame} - usually imported from SPSS using the haven package
@@ -141,6 +142,7 @@ load_and_prep_ACHA_file <- function(file_path) {
     return(df_t)
 }
 
+
 #' Prints latex tables for comparing recoded variables
 #' 
 
@@ -155,6 +157,7 @@ create_latex_crosstabs <- function(df, row_var, col_var, col_sep = "1pt", font_s
             header = FALSE
         )
 }
+
 
 #' Runs a principal components analysis with parallel analysis for detection of latent factors
 #' 
@@ -323,3 +326,62 @@ coefficient_H <- function(lamdba){
     }
     return(H_result)
 }
+
+
+#' Generate model fit and empirical summary data. 
+#' 
+
+create_dx_summary_table <- function(original_df, fitted_df, yvar, begin=0, end=10.5, time_var = "c_Time") {
+    empirical_res <- original_df %>% 
+        filter(!!sym(time_var) %in% c(begin, end)) %>% 
+        group_by(!!sym(time_var)) %>% 
+        summarize(empirical_prop = mean(!!sym(yvar), na.rm = TRUE)) %>% 
+        mutate(
+            AY = c("2008-09", "2018-19"), 
+            empirical_OR = c(NA, 
+                             (empirical_prop[AY=="2018-19"] / (1 - empirical_prop[AY=="2018-19"])) /
+                                 (empirical_prop[AY=="2008-09"] / (1 - empirical_prop[AY=="2008-09"]))
+                             ),
+            empirical_abs_diff = c(NA, 
+                                   empirical_prop[AY=="2018-19"] - empirical_prop[AY=="2008-09"]),
+            empirical_RR = c(NA, 
+                             empirical_prop[AY=="2018-19"] / empirical_prop[AY=="2008-09"])
+        )
+    
+    fitted_res <- fitted_df %>% 
+        filter(!!sym(time_var) %in% c(begin, end)) %>% 
+        group_by(!!sym(time_var)) %>% 
+        mutate(
+            fitted_prop = perc / 100 
+        ) %>% 
+        select(!!sym(time_var), fitted_prop) %>% 
+        group_by(!!sym(time_var)) %>% 
+        summarize(fitted_prop = mean(fitted_prop)) %>% 
+        mutate(
+            AY = c("2008-09", "2018-19"), 
+            fitted_OR = c(NA, 
+                             (fitted_prop[AY=="2018-19"] / (1 - fitted_prop[AY=="2018-19"])) /
+                                 (fitted_prop[AY=="2008-09"] / (1 -fitted_prop[AY=="2008-09"]))
+            ),
+            fitted_abs_diff = c(NA, 
+                                fitted_prop[AY=="2018-19"] - fitted_prop[AY=="2008-09"]),
+            fitted_RR = c(NA, 
+                          fitted_prop[AY=="2018-19"] / fitted_prop[AY=="2008-09"])
+        )
+    
+    final_df <- empirical_res %>%
+        select(-!!sym(time_var)) %>% 
+        left_join(fitted_res) %>% 
+        mutate(
+            Variable = yvar
+        ) %>% 
+        select(Variable, AY, 
+               empirical_prop, empirical_abs_diff, empirical_RR, empirical_OR, 
+               fitted_prop, fitted_abs_diff, fitted_RR, fitted_OR)
+    
+    colnames(final_df) <- c("Variable", "Academic Year", 
+                            paste("Observed", c("Probability", "Absolute Change", "Relative Change", "Odds Ratio")), 
+                            paste("Fitted", c("Probability", "Absolute Change", "Relative Change", "Odds Ratio")))
+    
+    return(final_df)
+} 

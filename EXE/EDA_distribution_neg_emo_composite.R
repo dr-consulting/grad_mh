@@ -23,7 +23,9 @@ ucm_neg_emo_form_gamma <- "neg_emo_avg ~ 1 + (1|school_id)" %>% bf() + Gamma(lin
 
 fit_lgnrml <- brm(
     ucm_neg_emo_form_lgnrml, 
-    data = neg_vars_df, 
+    data = neg_vars_df,
+	cores = 3, 
+	chains = 3, 
     iter = 7500, 
     warmup = 5000, 
     control = list(adapt_delta = .95)
@@ -31,7 +33,9 @@ fit_lgnrml <- brm(
 
 fit_gamma <- brm(
     ucm_neg_emo_form_gamma, 
-    data = neg_vars_df, 
+    data = neg_vars_df,
+	cores = 3, 
+	chains =3, 
     iter = 7500, 
     warmup = 5000, 
     control = list(adapt_delta = .95)

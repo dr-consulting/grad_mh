@@ -31,6 +31,7 @@ library(glue)
 library(tidyverse)
 library(tidygraph)
 library(tufte)
+library(lavaan)
 
 # Don't forget the DATA_VERSION update if needed
 DATA_VERSION <- "2021-01-15"
@@ -318,12 +319,18 @@ We began our confirmatory factor analyses (CFAs) by creating a single-factor mod
 Fit statistics for the one-factor model suggest that it did not fit the data particularly well. Explicitly, we would expect to see $CFI > .95$ and $SRMR < .08$ in a model that provides a reasonable approximation of the latent structure. Neither was true in the one-factor model. Notably, we observed a significant $\chi^2$ statistic, denoted by the $p$ row in Table 5. In smaller samples, this result may be of concern. However, in a sample this large, even small deviations between the observed and expected covariance matrices can create large $\chi^2$ estimates. Throughout our CFA modeling, we mainly relied on robust $\chi^2$ difference tests to compare alternative models and otherwise ignored the standalone $\chi^2$ statistic as a meaningful indicator of overall data-model fit. 
 
 ```{r}
-library(lavaan)
+dich_vars <- c('Q30A_hopeless_r_2wks', 'Q30D_lonely_r_2wks', 'Q30E_sad_r_2wks', 'Q30F_depressed_r_2wks', 'Q30G_anxiety_r_2wks', 'Q30H_anger_r_2wks', 'Q30B_overwhelmed_r_2wks', 'Q30C_exhausted_r_2wks')
+
+for(var in dich_vars) {
+  grad_train[[var]] <- as.factor(grad_train[[var]])
+  grad_train[[var]] <- ordered(grad_train[[var]])
+  print(levels(grad_train[[var]]))
+}
 
 one_fact_base <- "
-F1 =~ Q30A_hopeless_r + Q30D_lonely_r + Q30E_sad_r + Q30F_depressed_r + Q30G_anxiety_r + Q30H_anger_r + Q30B_overwhelmed_r + Q30C_exhausted_r
+F1 =~ Q30A_hopeless_r_2wks + Q30D_lonely_r_2wks + Q30E_sad_r_2wks + Q30F_depressed_r_2wks + Q30G_anxiety_r_2wks + Q30H_anger_r_2wks + Q30B_overwhelmed_r_2wks + Q30C_exhausted_r_2wks
 "
-res_1 <- find_single_factor_final_model(one_fact_base, data = grad_train, ordered_vars = vars, p_thresh = 1e-5)
+res_1 <- find_single_factor_final_model(one_fact_base, data = grad_train, ordered_vars = dich_vars, p_thresh = 1e-5)
 
 # Get loadings for base model
 mod_matrix <- inspect(res_1[["base_fit"]], what = "std")
@@ -413,18 +420,18 @@ Focusing first on the global fit statistics for this model, both the $CFI$ and $
 
 ```{r}
 two_fact_base <- "
-F1 =~ Q30A_hopeless_r + Q30D_lonely_r + Q30E_sad_r + Q30F_depressed_r + Q30G_anxiety_r + Q30H_anger_r 
-F2 =~ Q30B_overwhelmed_r + Q30C_exhausted_r
+F1 =~ Q30A_hopeless_r_2wks + Q30D_lonely_r_2wks + Q30E_sad_r_2wks + Q30F_depressed_r_2wks + Q30G_anxiety_r_2wks + Q30H_anger_r_2wks 
+F2 =~ Q30B_overwhelmed_r_2wks + Q30C_exhausted_r_2wks
 "
 
-valid_covars <- names(label_map)[label_map %in% emo_distress]
+valid_covars <- paste0(names(label_map)[label_map %in% emo_distress], '_2wks')
 
 # Had to run through the comparisons and then add in iteratively error covariances that included heywood cases
 invalid_covars <- c(
-  "Q30D_lonely_r~~Q30G_anxiety_r"
+  "Q30D_lonely_r_2wks~~Q30G_anxiety_r_2wks"
 )
 
-res_2 <- find_dual_factor_final_model(two_fact_base, data = grad_train, ordered_vars = vars, valid_covars = valid_covars, 
+res_2 <- find_dual_factor_final_model(two_fact_base, data = grad_train, ordered_vars = dich_vars, valid_covars = valid_covars, 
                                       invalid_covars = invalid_covars, p_thresh = 1e-5)
 
 # Get loadings for base model
@@ -523,11 +530,11 @@ Our first approach to accounting for this divergence was to create a three-facto
 
 ```{r}
 three_fact_base <- "
-F1 =~ Q30A_hopeless_r + Q30D_lonely_r + Q30E_sad_r + Q30F_depressed_r 
-F2 =~ Q30B_overwhelmed_r + Q30C_exhausted_r
-F3 =~ Q30G_anxiety_r + Q30H_anger_r 
+F1 =~ Q30A_hopeless_r_2wks + Q30D_lonely_r_2wks + Q30E_sad_r_2wks + Q30F_depressed_r_2wks 
+F2 =~ Q30B_overwhelmed_r_2wks + Q30C_exhausted_r_2wks
+F3 =~ Q30G_anxiety_r_2wks + Q30H_anger_r_2wks 
 "
-res_3 <- find_dual_factor_final_model(three_fact_base, data = grad_train, ordered_vars = vars, valid_covars = valid_covars[1:4], 
+res_3 <- find_dual_factor_final_model(three_fact_base, data = grad_train, ordered_vars = dich_vars, valid_covars = valid_covars[1:4], 
                                       invalid_covars = NULL, p_thresh = 1e-5)
 
 # Get loadings for base model
@@ -623,10 +630,16 @@ Given the high correlation between the *depressed affect* and *negative emotion 
 1. Allowed for a distinction between the _depressed affect_ item set and the two _negative emotion intensity_ items consistent with the three-factor solution. 
 
 ```{r}
+for(var in dich_vars) {
+  grad_test[[var]] <- as.factor(grad_test[[var]])
+  grad_test[[var]] <- ordered(grad_test[[var]])
+  print(levels(grad_test[[var]]))
+}
+
 grad_train[["train_flag"]] <- "Train"
 grad_test[["train_flag"]] <- "Test"
 
-grad_comb <- rbind(grad_train[,c(vars, "train_flag")], grad_test[,c(vars, "train_flag")])
+grad_comb <- rbind(grad_train[,c(dich_vars, "train_flag")], grad_test[,c(dich_vars, "train_flag")])
 ```
 
 ```{r}
@@ -637,7 +650,7 @@ params_1 <- parameterestimates(res_1$base_fit) %>%
 
 one_fact_test_fixed <- "{params_1[['lhs']]} {params_1[['op']]} {params_1[['est']]} * {params_1[['rhs']]}" %>% glue::glue()
 
-fit_one_test_fixed <- cfa(one_fact_test_fixed, data=grad_test, ordered=vars)
+fit_one_test_fixed <- cfa(one_fact_test_fixed, data=grad_test, ordered=dich_vars)
 # summary(fit_one_test_fixed, standardized = TRUE, fit.measures=TRUE)
 fit_stats_one_fixed <- fitmeasures(fit_one_test_fixed, fit.measures = fit_stats)
 
@@ -649,7 +662,7 @@ params_2 <- parameterestimates(res_2$base_fit) %>%
 
 two_fact_test_fixed <- "{params_2[['lhs']]} {params_2[['op']]} {params_2[['est']]} * {params_2[['rhs']]}" %>% glue::glue()
 
-fit_two_test_fixed <- cfa(two_fact_test_fixed, data=grad_test, ordered=vars)
+fit_two_test_fixed <- cfa(two_fact_test_fixed, data=grad_test, ordered=dich_vars)
 # summary(fit_two_test_fixed, standardized = TRUE, fit.measures=TRUE)
 fit_stats_two_fixed <- fitmeasures(fit_two_test_fixed, fit.measures = fit_stats)
 
@@ -661,7 +674,7 @@ params_3 <- parameterestimates(res_3$base_fit) %>%
 
 three_fact_test_fixed <- "{params_3[['lhs']]} {params_3[['op']]} {params_3[['est']]} * {params_3[['rhs']]}" %>% glue::glue()
 
-fit_three_test_fixed <- cfa(three_fact_test_fixed, data=grad_test, ordered=vars)
+fit_three_test_fixed <- cfa(three_fact_test_fixed, data=grad_test, ordered=dich_vars)
 # summary(fit_three_test_fixed, standardized = TRUE, fit.measures=TRUE)
 fit_stats_three_fixed <- fitmeasures(fit_three_test_fixed, fit.measures = fit_stats)
 
@@ -684,14 +697,15 @@ Though not a particular focus of our main paper, we wanted to be certain we were
 
 ```{r, fig.cap="Hierarchical model path structure. Note that the covariance between F2 and F4 is included in the model but is not depicted."}
 hier_fact_base <- "
-F1 =~ Q30A_hopeless_r + Q30D_lonely_r + Q30E_sad_r + Q30F_depressed_r 
-F2 =~ Q30B_overwhelmed_r + Q30C_exhausted_r
-F3 =~ Q30G_anxiety_r + Q30H_anger_r 
+F1 =~ Q30A_hopeless_r_2wks + Q30D_lonely_r_2wks + Q30E_sad_r_2wks + Q30F_depressed_r_2wks 
+F2 =~ Q30B_overwhelmed_r_2wks + Q30C_exhausted_r_2wks
+F3 =~ Q30G_anxiety_r_2wks + Q30H_anger_r_2wks 
 F4 =~ F1 + F3
 "
-
-fit_hier_base <- cfa(hier_fact_base, data = grad_comb, ordered = vars, std.lv=TRUE)
-lavaanPlot::lavaanPlot(model = fit_hier_base, labels = label_map, graph_options = list(fontsize = 9))
+dich_label_map <- label_map
+names(dich_label_map) <- dich_vars[c(1,7,8,2:6)]
+fit_hier_base <- cfa(hier_fact_base, data = grad_comb, ordered = dich_vars, std.lv=TRUE)
+lavaanPlot::lavaanPlot(model = fit_hier_base, labels = dich_label_map, graph_options = list(fontsize = 9))
 ```
 
 ```{r}

@@ -211,7 +211,7 @@ create_full_pred_df <- function(base_df, n_time_points, time_min, time_max) {
 
 create_plot_df <- function(df, n_samples) {
     df %>% 
-        add_fitted_draws(model, n = n_samples, allow_new_levels = TRUE) %>% 
+        add_fitted_draws(model, n = n_samples, re_formula = NA) %>% 
         ungroup() %>% 
         mutate(
             perc = .value*100, 
@@ -247,8 +247,8 @@ create_plot_df <- function(df, n_samples) {
 #' @retrun \code{ggplot} object
 #' 
 
-create_percent_summary_plot <- function(fitted_df, group_df, title, y_breaks, y_labels, x_breaks, x_labels, color_pal, 
-                                        caption=NULL, subtitle=NULL) {
+create_percent_summary_plot <- function(fitted_df, group_df, title, y_breaks, y_labels, y_limits, x_breaks, x_labels, 
+                                        color_pal, caption=NULL, subtitle=NULL) {
     fitted_df %>% 
         ggplot(aes(x = c_Time, y = perc)) +
         stat_lineribbon(.width = .95, 
@@ -261,6 +261,7 @@ create_percent_summary_plot <- function(fitted_df, group_df, title, y_breaks, y_
                                       "MLM Fit" = RColorBrewer::brewer.pal(9, color_pal)[9])) +
         scale_x_continuous(breaks = x_breaks, labels = x_labels) +
         scale_y_continuous(breaks = y_breaks, labels = y_labels) +
+        coord_cartesian(ylim = y_limits) +
         geom_jitter(data=grp_df, aes(x = !!sym(xvar), y = perc, size = count), 
                     alpha = .1875, width = .075, color = RColorBrewer::brewer.pal(9, color_pal)[8], 
                     fill = RColorBrewer::brewer.pal(9, color_pal)[3]) +

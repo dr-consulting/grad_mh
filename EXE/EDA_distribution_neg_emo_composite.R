@@ -21,6 +21,7 @@ neg_vars_df[["neg_emo_avg"]] <- rowMeans(neg_vars_df[neg_vars], na.rm = TRUE)
 ucm_neg_emo_form_lgnrml <- "neg_emo_avg ~ 1 + (1|school_id)" %>% bf() + brms::lognormal()
 ucm_neg_emo_form_gamma <- "neg_emo_avg ~ 1 + (1|school_id)" %>% bf() + Gamma(link = "log")
 
+
 fit_lgnrml <- brm(
     ucm_neg_emo_form_lgnrml, 
     data = neg_vars_df,
@@ -31,6 +32,8 @@ fit_lgnrml <- brm(
     control = list(adapt_delta = .95)
 )
 
+
+start_time <- Sys.time()
 fit_gamma <- brm(
     ucm_neg_emo_form_gamma, 
     data = neg_vars_df,
@@ -40,3 +43,4 @@ fit_gamma <- brm(
     warmup = 5000, 
     control = list(adapt_delta = .95)
 )
+gamma_run_time <- difftime(Sys.time(), start_time, units = "mins")

@@ -63,10 +63,10 @@ model {
       // add more terms to the linear predictor
       mu[n] += r_1_1[J_1[n]] * Z_1_1[n] + r_1_2[J_1[n]] * Z_1_2[n];
     }
-    target += bernoulli_logit_glm_lpmf(Y | Xc, mu, b);
+    target += poisson_log_glm_lpmf(Y | Xc, mu, b);
   }
   // priors including constants
-  target += student_t_lpdf(Intercept | 3, 0, 2.5);
+  target += student_t_lpdf(Intercept | 3, -2.3, 2.5);
   target += student_t_lpdf(sd_1 | 3, 0, 2.5)
     - 2 * student_t_lccdf(0 | 3, 0, 2.5);
   target += std_normal_lpdf(to_vector(z_1));

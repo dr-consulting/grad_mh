@@ -16,6 +16,7 @@ functions {
 data {
   int<lower=1> N;  // total number of observations
   int Y[N];  // response variable
+  int trials[N];  // number of trials
   int<lower=1> K;  // number of population-level effects
   matrix[N, K] X;  // population-level design matrix
   // data for group-level effects of ID 1
@@ -58,12 +59,12 @@ model {
   // likelihood including constants
   if (!prior_only) {
     // initialize linear predictor term
-    vector[N] mu = Intercept + rep_vector(0.0, N);
+    vector[N] mu = Intercept + Xc * b;
     for (n in 1:N) {
       // add more terms to the linear predictor
       mu[n] += r_1_1[J_1[n]] * Z_1_1[n] + r_1_2[J_1[n]] * Z_1_2[n];
     }
-    target += bernoulli_logit_glm_lpmf(Y | Xc, mu, b);
+    target += binomial_logit_lpmf(Y | trials, mu);
   }
   // priors including constants
   target += student_t_lpdf(Intercept | 3, 0, 2.5);

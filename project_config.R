@@ -40,3 +40,115 @@ PRIOR_CONFIG <- c(
         class = 'cor'
     )
 )
+
+POIS_PRIOR_CONFIG <- c(
+    brms::set_prior(
+        'normal(0, 2)',
+        class = 'b'
+    ), 
+    brms::set_prior(
+        'lkj(2)',
+        class = 'cor'
+    )
+)
+
+PERC_PLOT_CONFIG <- list(
+    'Anxiety' = list(
+        y_breaks=seq(0, 50, by=10), 
+        y_labels=paste0(seq(0, 50, by=10), "%"), 
+        y_limits=c(0, 51)
+    ),
+    'Any Psychiatric Disorder' = list(
+        y_breaks=seq(0, 60, by=10), 
+        y_labels=paste0(seq(0, 60, by=10), "%"), 
+        y_limits=c(0,61)
+    ),
+    'Bipolar Disorder' = list(
+        y_breaks=seq(0, 5, by=1), 
+        y_labels=paste0(seq(0, 5, by=1), "%"), 
+        y_limits=c(0,5.1)
+    ),
+    'Depression' = list(
+        y_breaks=seq(0, 40, by=10), 
+        y_labels=paste0(seq(0, 40, by=10), "%"), 
+        y_limits=c(0, 41)
+    ), 
+    'Panic Attacks' = list(
+        y_breaks=seq(0, 25, by=5), 
+        y_labels=paste0(seq(0, 25, by=5), "%"), 
+        y_limits=c(0, 26)
+    ), 
+    'Schizophrenia' = list(
+        y_breaks=seq(0, 2.5, by=.5), 
+        y_labels=paste0(seq(0, 2.5, by=.5), "%"), 
+        y_limits=c(0, 2.6)
+    ), 
+    'Suicidal Thoughts' = list(
+        y_breaks=seq(0, 15, by=5), 
+        y_labels=paste0(seq(0, 15, by=5), "%"), 
+        y_limits=c(0, 16)
+    ), 
+    'Suicide Attempt' = list(
+        y_breaks=seq(0, 5, by=1), 
+        y_labels=paste0(seq(0, 5, by=1), "%"), 
+        y_limits=c(0, 5.1)
+    ), 
+    'General Psychological Distress' = list(
+        y_breaks=seq(0, 30, by=10), 
+        y_labels=paste0(seq(0, 30, by=10), "%"), 
+        y_limits=c(0, 31)
+    ),
+    'Overwhelmed & Exhausted' = list(
+        y_breaks=seq(0, 75, by=25), 
+        y_labels=paste0(seq(0, 75, by=25), "%"), 
+        y_limits=c(0, 76)
+    ), 
+    'Poor Health' = list(
+        y_breaks=seq(0, 30, by=10), 
+        y_labels=paste0(seq(0, 30, by=10), "%"), 
+        y_limits=c(0, 31)
+    )
+)
+
+NSDUH_PLOT_CONFIG <- list(
+    'Any Psychiatric Disorder' = list(
+        y_breaks=seq(0, 60, by=10), 
+        y_labels=paste0(seq(0, 60, by=10), "%"), 
+        y_limits=c(0,61)
+    ),
+    'Suicidal Thoughts' = list(
+        y_breaks=seq(0, 15, by=5), 
+        y_labels=paste0(seq(0, 15, by=5), "%"), 
+        y_limits=c(0, 16)
+    ), 
+    'Suicide Attempt' = list(
+        y_breaks=seq(0, 5, by=1), 
+        y_labels=paste0(seq(0, 5, by=1), "%"), 
+        y_limits=c(0, 5.1)
+    ), 
+    'Poor Health' = list(
+        y_breaks=seq(0, 30, by=10), 
+        y_labels=paste0(seq(0, 30, by=10), "%"), 
+        y_limits=c(0,31)
+    ), 
+    'Matched Any Psychiatric Disorder' = list(
+        y_breaks=seq(0, 60, by=10), 
+        y_labels=paste0(seq(0, 60, by=10), "%"), 
+        y_limits=c(0,61)
+    ),
+    'Matched Suicidal Thoughts' = list(
+        y_breaks=seq(0, 15, by=5), 
+        y_labels=paste0(seq(0, 15, by=5), "%"), 
+        y_limits=c(0, 16)
+    ), 
+    'Matched Suicide Attempt' = list(
+        y_breaks=seq(0, 5, by=1), 
+        y_labels=paste0(seq(0, 5, by=1), "%"), 
+        y_limits=c(0, 5.1)
+    ), 
+    'Matched Poor Health' = list(
+        y_breaks=seq(0, 30, by=10), 
+        y_labels=paste0(seq(0, 30, by=10), "%"), 
+        y_limits=c(0,31)
+    )
+)

@@ -4,18 +4,23 @@ library(tidybayes)
 library(tidyverse)
 library(glue)
 
+DATA_VERSION <- "2021-02-04"
+
 source('~/github/ATNL/grad_mh/project_config.R')
 sapply(list.files(R_DIR, full.names = TRUE), source)
+load("{DATA_DIR}/ACHA-II/acha_grad_students_base_{DATA_VERSION}.RData" %>% glue::glue())
 
-yvars <- list('Anxiety' = c(var_name='Q31A_anxiety_dich', data_prefix='dx_anxiety'),
-              'Any Psychiatric Disorder' = c(var_name='any_dx_nsduh', data_prefix='dx_nsduh_any'),
-              'Bipolar Disorder' = c(var_name='Q31A_bipolar_dich', data_prefix='bipolar'),
-              'Depression' = c(var_name='Q31A_depression_dich', data_prefix='dx_depression'), 
-              'Panic Attacks' = c(var_name='Q31B_panic_dich', data_prefix='panic'), 
-              'Schizophrenia' = c(var_name='Q31B_schizo_dich', data_prefix='dx_schizo'), 
-              'Suicidal Thoughts' = c(var_name='Q30J_suic_thnk_r_12mos', data_prefix='suic_thnk'), 
-              'Suicide Attempt' = c(var_name='Q30K_suic_try_r_12mos', data_prefix='suic_try'), 
-              'Poor Health' = c(var_name='global_health_dich', data_prefix='global_health'))
+# Explicitly choosing to drop everyone that has at least one missing - don't want to count as valid 0's in a count 
+neg_vars <- c("Q30A_hopeless_r", "Q30D_lonely_r", "Q30E_sad_r", "Q30F_depressed_r", "Q30G_anxiety_r", "Q30H_anger_r") %>% 
+    paste(sep = '_', '2wks')
+grads_model_base[['neg_emo_cnt']] <- rowSums(grads_model_base[,neg_vars])
+ovrwhlm_vars <- c('Q30B_overwhelmed_r', 'Q30C_exhausted_r') %>% 
+    paste(sep = '_', '2wks')
+grads_model_base[['ovrwhlm_cnt']] <- rowSums(grads_model_base[,ovrwhlm_vars])
+
+# Setting up variables to iterate over
+yvars <- list('General Psychological Distress' = c(var_name='neg_emo_cnt', data_prefix='ncha_bin', trials=6),
+              'Overwhelmed & Exhausted' = c(var_name='ovrwhlm_cnt', data_prefix='ncha_bin', trials=2))
 
 time_vars <- c('c_Time', 'quad_c_Time')
 covariates <- c('Intercept'='Intercept', 'Time'='c_Time', 'Time^2'='quad_c_Time',
@@ -36,7 +41,7 @@ covariates <- c('Intercept'='Intercept', 'Time'='c_Time', 'Time^2'='quad_c_Time'
                 'Size: 10,000-19,999 v. <2,500'='school_size10000M19999students',
                 'Size: >20,000 v. <2,500'='school_size20000studentsormore',
                 'Public School'='public_schl'
-                )
+)
 
 xvar <- 'c_Time'
 
@@ -47,8 +52,10 @@ for(yvar in names(yvars)){
     names(var_name) <- NULL
     data_prefix <- yvars[[yvar]]['data_prefix']
     names(data_prefix) <- NULL
+    trials <- yvars[[yvar]]['trials'] %>% as.numeric()
+    names(trials) <- NULL
     
-    data_filepath <- "{POSTERIOR_OUTPUTS}/{data_prefix}_full_covariate.RData" %>% glue()
+    data_filepath <- "{POSTERIOR_OUTPUTS}/{data_prefix}_{var_name}.RData" %>% glue()
     
     if(file.exists(data_filepath)) {
         load(data_filepath)
@@ -73,7 +80,7 @@ for(yvar in names(yvars)){
             group_by(school_id, !!sym(xvar)) %>% 
             summarize(
                 count = n(), 
-                perc = mean(!!sym(var_name), na.rm = TRUE) * 100
+                perc = mean(!!sym(var_name), na.rm = TRUE) / trials * 100
             ) %>% 
             filter(count >= 30)
         
@@ -143,7 +150,7 @@ for(yvar in names(yvars)){
             y_limits = PERC_PLOT_CONFIG[[yvar]][['y_limits']],
             color_pal = "Blues", 
         )
-        
+
         ggsave(
             plotlist[[yvar]],
             filename = "{PLOT_OUTPUT}/ACHA-NCHA_{yvar}_summary_plot_new.png" %>% glue(), 
@@ -155,7 +162,7 @@ for(yvar in names(yvars)){
         )
         
         # Create summary table of observed and fitted effects
-        create_bin_summary_table(data, plot_df, yvar = var_name) %>% 
+        create_bin_summary_table(data, plot_df, yvar = var_name, trials=trials) %>% 
             write.csv("{SUMMARY_OUTPUT}/ACHA-NCHA_{yvar}_summary_stats.csv" %>% glue(), row.names = FALSE)
         
         summary_plot <- plotlist[[yvar]]

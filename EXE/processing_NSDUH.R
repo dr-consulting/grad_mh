@@ -61,6 +61,37 @@ nsduh_study_df[['qtr_date']] <-
         sep = '-') %>% 
     as.Date(., format = '%Y-%m-%d')
 
+# Create a c_Time Variable that centers at second half of 2008 and drops cases before then 
+# The rationale here is that we want to get an approximation of the NCHA data set window
+nsduh_study_df <- nsduh_study_df %>% 
+    filter(qtr_date > as.Date('2008-06-02', format='%Y-%m-%d')) %>% 
+    mutate(
+        c_Time = case_when(
+            as.character(qtr_date) %in% paste0('2008-', c('09-01', '12-01')) ~ 0,
+            as.character(qtr_date) %in% paste0('2009-', c('03-01', '06-01')) ~ .5,
+            as.character(qtr_date) %in% paste0('2009-', c('09-01', '12-01')) ~ 1,
+            as.character(qtr_date) %in% paste0('2010-', c('03-01', '06-01')) ~ 1.5,
+            as.character(qtr_date) %in% paste0('2010-', c('09-01', '12-01')) ~ 2,
+            as.character(qtr_date) %in% paste0('2011-', c('03-01', '06-01')) ~ 2.5,
+            as.character(qtr_date) %in% paste0('2011-', c('09-01', '12-01')) ~ 3,
+            as.character(qtr_date) %in% paste0('2012-', c('03-01', '06-01')) ~ 3.5,
+            as.character(qtr_date) %in% paste0('2012-', c('09-01', '12-01')) ~ 4,
+            as.character(qtr_date) %in% paste0('2013-', c('03-01', '06-01')) ~ 4.5,
+            as.character(qtr_date) %in% paste0('2013-', c('09-01', '12-01')) ~ 5,
+            as.character(qtr_date) %in% paste0('2014-', c('03-01', '06-01')) ~ 5.5,
+            as.character(qtr_date) %in% paste0('2014-', c('09-01', '12-01')) ~ 6,
+            as.character(qtr_date) %in% paste0('2015-', c('03-01', '06-01')) ~ 6.5,
+            as.character(qtr_date) %in% paste0('2015-', c('09-01', '12-01')) ~ 7,
+            as.character(qtr_date) %in% paste0('2016-', c('03-01', '06-01')) ~ 7.5,
+            as.character(qtr_date) %in% paste0('2016-', c('09-01', '12-01')) ~ 8,
+            as.character(qtr_date) %in% paste0('2017-', c('03-01', '06-01')) ~ 8.5,
+            as.character(qtr_date) %in% paste0('2017-', c('09-01', '12-01')) ~ 9,
+            as.character(qtr_date) %in% paste0('2018-', c('03-01', '06-01')) ~ 9.5,
+            as.character(qtr_date) %in% paste0('2018-', c('09-01', '12-01')) ~ 10,
+            as.character(qtr_date) %in% paste0('2019-', c('03-01', '06-01')) ~ 10.5,
+        )
+    )
+
 # Build back in the skip logic for `suic_try_12mos`
 # The question was skipped over if the respondent indicated no to the previous think and plan questions
 nsduh_study_df[['suic_try_12mos']] <- ifelse(is.na(nsduh_study_df[['suic_try_12mos']]) & 

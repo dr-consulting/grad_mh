@@ -1,0 +1,131 @@
+library(brms)
+library(modelr)
+library(tidybayes)
+library(tidyverse)
+library(glue)
+
+source('~/github/ATNL/grad_mh/project_config.R')
+sapply(list.files(R_DIR, full.names = TRUE), source)
+
+yvars <- list('Anxiety' = c(var_name='Q31A_anxiety_dich', data_prefix='dx_anxiety_no_cov'),
+              'Any Psychiatric Disorder' = c(var_name='any_dx_nsduh', data_prefix='dx_nsduh_any_no_cov'),
+              'Bipolar Disorder' = c(var_name='Q31A_bipolar_dich', data_prefix='dx_bipolar_no_cov'),
+              'Depression' = c(var_name='Q31A_depression_dich', data_prefix='dx_depression_no_cov'), 
+              'Panic Attacks' = c(var_name='Q31B_panic_dich', data_prefix='dx_panic_no_cov'), 
+              'Schizophrenia' = c(var_name='Q31B_schizo_dich', data_prefix='dx_schizo_no_cov'), 
+              'Suicidal Thoughts' = c(var_name='Q30J_suic_thnk_r_12mos', data_prefix='dx_suic_thnk_no_cov'), 
+              'Suicide Attempt' = c(var_name='Q30K_suic_try_r_12mos', data_prefix='dx_suic_try_no_cov'), 
+              'Poor Health' = c(var_name='global_health_dich', data_prefix='global_health_dich_no_cov'), 
+              'Emotional Distress' = c(var_name='neg_emo_any', data_prefix='neg_emo_any_no_cov'), 
+              'Overwhelmed or Exhausted' = c(var_name='ovrwhlm_any', data_prefix='ovrwhlm_any_no_cov'), 
+              'Too Depressed to Function' = c(var_name="Q30F_depressed_r_2wks", data_prefix='depressed_no_cov'), 
+              'Overwhelming Anxiety' = c(var_name="Q30G_anxiety_r_2wks", data_prefix='anxious_no_cov'), 
+              'Lonely' = c(var_name="Q30D_lonely_r_2wks", data_prefix='lonely_no_cov'), 
+              'Hopeless' = c(var_name="Q30A_hopeless_r_2wks", data_prefix='hopeless_no_cov'))
+
+time_vars <- c('c_Time', 'quad_c_Time')
+covariates <- c('Intercept'='Intercept', 'Time'='c_Time', 'Time^2'='quad_c_Time')
+
+xvar <- 'c_Time'
+
+plotlist <- list()
+
+for(yvar in names(yvars)){
+    var_name <- yvars[[yvar]]['var_name']
+    names(var_name) <- NULL
+    data_prefix <- yvars[[yvar]]['data_prefix']
+    names(data_prefix) <- NULL
+    
+    data_filepath <- "{POSTERIOR_OUTPUTS}/{data_prefix}.RData" %>% glue()
+    
+    if(file.exists(data_filepath)) {
+        load(data_filepath)
+        
+        # Test that results_list is present after the load operation
+        testthat::expect_true(exists("results_list"))
+        
+        # Set base pipeline configuration here
+        data <- results_list[["brms_fit"]]$data
+        model <- results_list[["brms_fit"]]
+        
+        # Write full coefficients table to .csv
+        fixef_tbl <- fixef(model)
+        for(row in 1:nrow(fixef_tbl)) {
+            rownames(fixef_tbl)[row] <- names(covariates)[which(covariates == rownames(fixef_tbl)[row])]
+        }
+        fixef_tbl %>% 
+            write.csv("{SUMMARY_OUTPUT}/ACHA-NCHA_{yvar}_no_cov_coefficients_table.csv" %>% glue(), row.names = TRUE)
+        
+        # Create group df - only for schools with at least 30 respondents 
+        grp_df <- data %>% 
+            group_by(school_id, !!sym(xvar)) %>% 
+            summarize(
+                count = n(), 
+                perc = mean(!!sym(var_name), na.rm = TRUE) * 100
+            ) %>% 
+            filter(count >= 30)
+        
+        load_data_path <- '{SUMMARY_OUTPUT}/ACHA-NCHA_{yvar}_no_cov_summary_data.RData' %>% glue()
+        
+        if(file.exists(load_data_path)) {
+            load(load_data_path)
+        }
+        else{
+            post_df <- posterior_samples(model, pars = c('b_Intercept', 'b_c_Time', 'b_quad_c_Time'))
+            names(post_df) <- c('b0', 'b1', 'b2')
+            
+            design_matrix <- data.frame(
+                intrcpt = 1,
+                time = seq(0, 10.5, by = .125), 
+                time_sq = seq(0, 10.5, by = .125)^2
+            )
+            
+            plot_df <- data.frame()
+            for(r in 1:nrow(post_df)) {
+                pred_y <- design_matrix[['intrcpt']] * post_df[['b0']][r] + 
+                    design_matrix[['time']] * post_df[['b1']][r] +
+                    design_matrix[['time_sq']] * post_df[['b2']][r]
+                
+                tmp_df <- data.frame(
+                    c_Time = design_matrix[['time']], 
+                    perc = logits_to_prob(pred_y) * 100
+                )
+                plot_df <- rbind(plot_df, tmp_df)
+            }
+        }
+        
+        plotlist[[yvar]] <- create_percent_summary_plot(
+            plot_df, 
+            grp_df, 
+            title = yvar,
+            x_breaks = seq(0.5, 10.5, by = 2),
+            x_labels = seq(2009, 2019, by = 2),
+            y_breaks = PERC_PLOT_CONFIG[[yvar]][['y_breaks']],
+            y_labels = PERC_PLOT_CONFIG[[yvar]][['y_labels']],
+            y_limits = PERC_PLOT_CONFIG[[yvar]][['y_limits']],
+            color_pal = "Blues", 
+        )
+        
+        ggsave(
+            plotlist[[yvar]],
+            filename = "{PLOT_OUTPUT}/ACHA-NCHA_{yvar}_no_cov_summary_plot_new.png" %>% glue(), 
+            device = "png", 
+            units = "in", 
+            height = 5,
+            width = 9,
+            dpi = 600
+        )
+        
+        # Create summary table of observed and fitted effects
+        create_bin_summary_table(data, plot_df, yvar = var_name) %>% 
+            write.csv("{SUMMARY_OUTPUT}/ACHA-NCHA_{yvar}_no_cov_summary_stats.csv" %>% glue(), row.names = FALSE)
+        
+        summary_plot <- plotlist[[yvar]]
+        
+        # Save and remove contents from this run - add in checking logic above later 
+        save(list = c('data', 'model', 'plot_df', 'summary_plot'), 
+             file = '{SUMMARY_OUTPUT}/ACHA-NCHA_{yvar}_no_cov_summary_data.RData' %>% glue())
+        remove(list=c('data', 'model', 'plot_df', 'summary_plot'))
+        gc()
+    }
+}

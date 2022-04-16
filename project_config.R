@@ -93,20 +93,40 @@ PERC_PLOT_CONFIG <- list(
         y_labels=paste0(seq(0, 5, by=1), "%"), 
         y_limits=c(0, 5.1)
     ), 
-    'General Psychological Distress' = list(
-        y_breaks=seq(0, 30, by=10), 
-        y_labels=paste0(seq(0, 30, by=10), "%"), 
-        y_limits=c(0, 31)
-    ),
-    'Overwhelmed & Exhausted' = list(
+    'Emotional Distress' = list(
         y_breaks=seq(0, 75, by=25), 
         y_labels=paste0(seq(0, 75, by=25), "%"), 
         y_limits=c(0, 76)
+    ),
+    'Overwhelmed or Exhausted' = list(
+        y_breaks=seq(0, 100, by=25), 
+        y_labels=paste0(seq(0, 100, by=25), "%"), 
+        y_limits=c(0, 101)
     ), 
     'Poor Health' = list(
         y_breaks=seq(0, 30, by=10), 
         y_labels=paste0(seq(0, 30, by=10), "%"), 
         y_limits=c(0, 31)
+    ), 
+    'Too Depressed to Function' = list(
+        y_breaks=seq(0, 50, by=10), 
+        y_labels=paste0(seq(0, 50, by=10), "%"), 
+        y_limits=c(0, 51)
+    ), 
+    'Overwhelming Anxiety' = list(
+        y_breaks=seq(0, 50, by=10), 
+        y_labels=paste0(seq(0, 50, by=10), "%"), 
+        y_limits=c(0, 51)
+    ), 
+    'Lonely' = list(
+        y_breaks=seq(0, 50, by=10), 
+        y_labels=paste0(seq(0, 50, by=10), "%"), 
+        y_limits=c(0, 51)
+    ), 
+    'Hopeless' = list(
+        y_breaks=seq(0, 50, by=10), 
+        y_labels=paste0(seq(0, 50, by=10), "%"), 
+        y_limits=c(0, 51)
     )
 )
 

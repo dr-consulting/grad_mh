@@ -131,32 +131,20 @@ create_cor_network_plot <- function(df, vars, cor_method, label_map, color_map, 
 #' 
 
 create_base_pred_df <- function(n_per_school) {
-    # Hard coded and assumes a data.frame named data with these variables in the parent environment
-    # For now the goal is to make this brittle the use of a function is just convenience 
-    # See the examples section for intended use 
-    gender_prob <- table(data[["Q47_gender"]]) / nrow(data)
-    race_ethn_prob <- table(data[["race_ethn"]]) / nrow(data)
-    enrollment_prob <- table(data[["Q52_enrollment"]]) / nrow(data)
-    international_prob <- table(data[["Q55_international"]]) / nrow(data)
-    survey_method_prob <- table(data[["survey_method"]]) / nrow(data)
-    school_size_prob <- table(data[["school_size"]]) / nrow(data)
-    public_schl_prob <- table(data[["public_schl"]]) / nrow(data)
-    
     df <- tibble(
         school_id = rep(-9999, n_per_school), 
     ) %>%
         mutate(
-            c_Q46_age = 0,
-            Q47_gender = sample(names(gender_prob), prob = gender_prob, replace = TRUE, size = n()), 
-            race_ethn = sample(names(race_ethn_prob), prob = race_ethn_prob, replace = TRUE, size = n()),
-            Q52_enrollment = sample(names(enrollment_prob), prob = enrollment_prob, replace = TRUE, size = n()), 
-            Q55_international = sample(names(international_prob), prob = international_prob, replace = TRUE, size = n()),
-            survey_method = sample(names(survey_method_prob), prob = survey_method_prob, replace = TRUE, size = n()),
-            school_size = sample(names(school_size_prob), prob = school_size_prob, replace = TRUE, size = n()), 
-            public_schl = sample(names(public_schl_prob), prob = public_schl_prob, replace = TRUE, size = n()) %>% 
-                as.numeric(), 
-            school_id = -9999
-        )
+            c_Q46_age = sample(data[['c_Q46_age']], replace=TRUE, size=n()),
+            Q47_gender = sample(data[["Q47_gender"]], replace = TRUE, size = n()), 
+            race_ethn = sample(data[["race_ethn"]], replace = TRUE, size = n()),
+            Q52_enrollment = sample(data[["Q52_enrollment"]], replace = TRUE, size = n()), 
+            Q55_international = sample(data[["Q55_international"]], replace = TRUE, size = n()),
+            survey_method = sample(data[["survey_method"]], replace = TRUE, size = n()),
+            school_size = sample(data[["school_size"]], replace = TRUE, size = n()), 
+            public_schl = sample(data[["public_schl"]], replace = TRUE, size = n()) %>% 
+                as.numeric()        
+            )
 }
 
 
@@ -171,7 +159,7 @@ create_base_pred_df <- function(n_per_school) {
 #' 
 #' @param base_df \code{data.frame} the output of \code{create_base_pred_df()}
 #' 
-#' @param n_time_points an integer reprsenting the number of time points to create between the min and max values
+#' @param n_time_points an integer representing the number of time points to create between the min and max values
 #' 
 #' @param time_min the lowest value for the time variable used in the model - in this case \code{c_Time}
 #' 
@@ -211,12 +199,14 @@ create_full_pred_df <- function(base_df, n_time_points, time_min, time_max) {
 
 create_plot_df <- function(df, n_samples) {
     df %>% 
-        add_fitted_draws(model, n = n_samples, re_formula = NA) %>% 
+        add_fitted_draws(model, n = n_samples, allow_new_levels = TRUE) %>% 
         ungroup() %>% 
         mutate(
             perc = .value*100, 
         ) %>% 
-        select(c_Time, perc)
+        group_by(c_Time, .draw) %>% 
+        summarize(perc = mean(perc)) %>% 
+        select(c_Time, perc) 
 }
 
 #' Generates posterior plot using fitted df, group df and several parameters that can be passed down into the ggplot

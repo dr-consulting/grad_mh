@@ -14,7 +14,7 @@ save(list = c('grads_model_base', 'DATA_VERSION'),
      file = "{DATA_DIR}/ACHA-II/acha_grad_students_base_{DATA_VERSION}.RData" %>% glue::glue())
 
 id_var <- "school_id"
-y_var <- "Q30A_hopeless_r_2wks"
+y_var <- "Q30G_anxiety_r_2wks"
 lv1_vars <- c('c_Time', 'quad_c_Time', 'c_Q46_age', 'Q47_gender', 'race_ethn', 'Q52_enrollment', 'Q55_international', 
               'survey_method')
 lv2_int_vars <- c('school_size', 'public_schl')

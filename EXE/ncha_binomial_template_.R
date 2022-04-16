@@ -80,7 +80,7 @@ for(yvar in names(yvars)){
             group_by(school_id, !!sym(xvar)) %>% 
             summarize(
                 count = n(), 
-                perc = mean(!!sym(var_name), na.rm = TRUE) / trials * 100
+                perc = mean(!!sym(var_name), na.rm = TRUE)
             ) %>% 
             filter(count >= 30)
         
@@ -133,7 +133,7 @@ for(yvar in names(yvars)){
                 
                 tmp_df <- data.frame(
                     c_Time = design_matrix[['time']], 
-                    perc = logits_to_prob(pred_y) * 100
+                    perc = logits_to_prob(pred_y) * trials
                 )
                 plot_df <- rbind(plot_df, tmp_df)
             }
@@ -149,7 +149,7 @@ for(yvar in names(yvars)){
             y_labels = PERC_PLOT_CONFIG[[yvar]][['y_labels']],
             y_limits = PERC_PLOT_CONFIG[[yvar]][['y_limits']],
             color_pal = "Blues", 
-        )
+        ) + labs(y = "Number of Items")
 
         ggsave(
             plotlist[[yvar]],
@@ -162,7 +162,8 @@ for(yvar in names(yvars)){
         )
         
         # Create summary table of observed and fitted effects
-        create_bin_summary_table(data, plot_df, yvar = var_name, trials=trials) %>% 
+        plot_df[['perc']] <- plot_df[['perc']] / trials
+        create_bin_summary_table(data, plot_df, yvar = var_name, trials = trials) %>% 
             write.csv("{SUMMARY_OUTPUT}/ACHA-NCHA_{yvar}_summary_stats.csv" %>% glue(), row.names = FALSE)
         
         summary_plot <- plotlist[[yvar]]

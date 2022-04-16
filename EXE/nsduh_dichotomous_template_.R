@@ -144,33 +144,42 @@ ncha_yvars <- list('Any Psychiatric Disorder' = c(var_name='any_dx_nsduh', data_
 
 for(var in base_vars) {
     if(var %in% names(ncha_yvars)){
-        load('{SUMMARY_OUTPUT}/ACHA-NCHA_{var}_summary_data.RData' %>% glue())
+        load('{SUMMARY_OUTPUT}/ACHA-NCHA_{var}_no_cov_summary_data.RData' %>% glue())
         list_pos <- which(grepl(var, names(plotlist)))
+        acha_plot_df <- plot_df %>% 
+            group_by(c_Time) %>% 
+            summarize(lb = quantile(perc, .025), 
+                      ub = quantile(perc, .975),
+                      .value = mean(perc))
+        
         tmp_plot <- plotlist[[max(list_pos)]] +
             geom_line(data=plotlist[[min(list_pos)]]$data, aes(color='Fitted All Adults'), lwd=1.25) +
-            geom_line(data = nsduh_weighted_summary_df, aes_string(x='c_Time', y = yvars[[list_pos[1]]]['var_name']), 
-                      lty='dashed', alpha = .5) +
-            geom_point(data = nsduh_weighted_summary_df, 
-                       aes(x=c_Time, y = !!sym(yvars[[list_pos[1]]]['var_name']), color="Weighted Matched Adults")) +
-            labs(title = 'NSDUH: {var}' %>% glue(), 
+#            geom_line(data = nsduh_weighted_summary_df, aes_string(x='c_Time', y = yvars[[list_pos[1]]]['var_name']), 
+#                      lty='dashed', alpha = .5) +
+#            geom_point(data = nsduh_weighted_summary_df, 
+#                       aes(x=c_Time, y = !!sym(yvars[[list_pos[1]]]['var_name']), color="Weighted Matched Adults")) +
+            geom_line(data = acha_plot_df, aes(x = c_Time, y = .value, color='ACHA-NCHA'), lwd = 1.25) +
+            geom_ribbon(data = acha_plot_df, aes(x = c_Time, ymin = lb, ymax = ub, fill='ACHA-NCHA'), alpha=.2) +
+            labs(title = '{var}: Comparing ACHA-NCHA, U.S. Adults, and Matched Population of U.S. Adults' %>% glue(), 
                  color = 'Comparison Group') +
             guides(fill=FALSE)
         
         ggsave(
-            cowplot::plot_grid(summary_plot + 
-                                   theme(legend.position = c(.25, .8), 
-                                         legend.title = element_text(size = 11), 
-                                         legend.text = element_text(size = 9), 
-                                         legend.background = element_rect(fill = 'lightgrey', 
-                                                                          color = 'darkgrey', 
-                                                                          size = .5)) +
-                                   labs(title = 'NCHA: {var}' %>% glue()), 
-                               tmp_plot + 
-                                   theme(legend.position = c(.25, .9), 
-                                         legend.background = element_rect(fill = 'lightgrey', 
-                                                                          color = 'darkgrey', 
-                                                                          size = .5)), 
-                               ncol = 2, axis = 'hv', align='tblr'),
+            # cowplot::plot_grid(summary_plot + 
+            #                        theme(legend.position = c(.25, .8), 
+            #                              legend.title = element_text(size = 11), 
+            #                              legend.text = element_text(size = 9), 
+            #                              legend.background = element_rect(fill = 'lightgrey', 
+            #                                                               color = 'darkgrey', 
+            #                                                               size = .5)) +
+            #                        labs(title = 'NCHA: {var}' %>% glue()), 
+            #                    tmp_plot + 
+            #                        theme(legend.position = c(.25, .9), 
+            #                              legend.background = element_rect(fill = 'lightgrey', 
+            #                                                               color = 'darkgrey', 
+            #                                                               size = .5)), 
+            #                    ncol = 2, axis = 'hv', align='tblr'),
+            tmp_plot,
             filename = "{PLOT_OUTPUT}/NSDUH_{var}_combined_summary_plot.png" %>% glue(), 
             device = "png", 
             units = "in", 

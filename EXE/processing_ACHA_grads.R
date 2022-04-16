@@ -34,7 +34,6 @@ grads_model_base <- grads_only_study_df %>%
     ) %>% 
     filter(us_region != "Outside U.S.")
     
-
 # Add quadratic time slp 
 grads_model_base[["quad_c_Time"]] <- grads_model_base[["c_Time"]]^2
 

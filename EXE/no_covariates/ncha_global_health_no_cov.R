@@ -1,23 +1,19 @@
-library(brms)
-library(modelr)
-library(tidybayes)
-library(tidyverse)
-library(glue)
-
+# Base modeling script - starting off with simple analysis
 DATA_VERSION <- "2021-02-04"
 
 source('~/github/ATNL/grad_mh/project_config.R')
 sapply(list.files(R_DIR, full.names = TRUE), source)
 load("{DATA_DIR}/ACHA-II/acha_grad_students_base_{DATA_VERSION}.RData" %>% glue::glue())
 
-save(list = c('grads_model_base', 'DATA_VERSION'), 
-     file = "{DATA_DIR}/ACHA-II/acha_grad_students_base_{DATA_VERSION}.RData" %>% glue::glue())
+grads_model_base <- grads_model_base %>% 
+    mutate(
+        global_health_dich = ifelse(global_health_r %in% c('Poor', 'Fair'), 1, 0)
+    )
 
 id_var <- "school_id"
-y_var <- "Q30A_hopeless_r_2wks"
-lv1_vars <- c('c_Time', 'quad_c_Time', 'c_Q46_age', 'Q47_gender', 'race_ethn', 'Q52_enrollment', 'Q55_international', 
-              'survey_method')
-lv2_int_vars <- c('school_size', 'public_schl')
+y_var <- "global_health_dich"
+lv1_vars <- c('c_Time', 'quad_c_Time')
+lv2_int_vars <- NULL
 
 # Simple tests to ensure required variables are present
 testthat::expect_true(
@@ -53,5 +49,5 @@ res <- logistic_model_wrapper(
     iter = 7500, 
     chains = 3, 
     control_list = list(adapt_delta = .95), 
-    model_save_name = "ovrwhlm_any_logit"
+    model_save_name = "global_health_dich_no_cov"
 )

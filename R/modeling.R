@@ -13,12 +13,17 @@ logistic_model_wrapper <- function(data, prior_config, y_var, id_var, lv1_vars, 
     results_list <- list()
     results_list[["model_data"]] <- data
     
+    
     model <- "
     {y_var} ~ {paste(c(1, lv1_vars), collapse=' + ')} +
-    ({paste(c(1, lv1_ran_vars), collapse=' + ')} | {id_var}) +
-    {paste(lv2_int_vars, collapse=' + ')} 
-    " %>% glue::glue() %>% 
-        brms::bf() + brms::bernoulli()
+    ({paste(c(1, lv1_ran_vars), collapse=' + ')} | {id_var}) 
+    " %>% glue::glue() 
+    
+    if(!is.null(lv2_int_vars)) {
+        model <- "{model} + {paste(lv2_int_vars, collapse=' + ')}" %>% glue::glue()
+    }
+    
+    model <- model %>% brms::bf() + brms::bernoulli()
     
     results_list[["brms_formula"]] <- model
     results_list[["brms_priors"]] <- brms::get_prior(model, data)

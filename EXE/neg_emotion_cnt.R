@@ -14,7 +14,8 @@ neg_vars <- c("Q30A_hopeless_r", "Q30D_lonely_r", "Q30E_sad_r", "Q30F_depressed_
     paste(sep = '_', '2wks')
 
 # Explicitly choosing to drop everyone that has at least one missing - don't want to count as valid 0's in a count 
-hist(grads_model_base[['neg_emo_cnt']]) <- rowSums(grads_model_base[,neg_vars])
+grads_model_base[['neg_emo_cnt']] <- rowSums(grads_model_base[,neg_vars])
+hist(grads_model_base[['neg_emo_cnt']])
 
 id_var <- "school_id"
 y_var <- "neg_emo_cnt"

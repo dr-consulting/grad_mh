@@ -361,7 +361,7 @@ create_bin_summary_table <- function(original_df, fitted_df, yvar, begin=0, end=
             summarize(empirical_prop = mean(!!sym(yvar), na.rm = TRUE))
     }
     
-    # if trials is provided - divide the mean by the number to get a proporiton
+    # if trials is provided - divide the mean by the number to get a proportion
     if(!is.null(trials)) {
         empirical_res <- empirical_res %>% 
             mutate(empirical_prop = empirical_prop / trials)
@@ -380,31 +380,38 @@ create_bin_summary_table <- function(original_df, fitted_df, yvar, begin=0, end=
             empirical_RR = c(NA, 
                              empirical_prop[AY=="2018-19"] / empirical_prop[AY=="2008-09"])
         )
-    
+
     fitted_res <- fitted_df %>% 
-        filter(!!sym(time_var) %in% c(begin, end)) %>% 
-        group_by(!!sym(time_var)) %>% 
-        mutate(
-            fitted_prop = perc / 100 
-        ) %>% 
+        filter(!!sym(time_var) %in% c(begin, end))
+    
+    if (is.null(trials)) {
+        fitted_res <- fitted_res %>% 
+            mutate(fitted_prop = perc / 100)
+    }
+    else {
+        fitted_res <- fitted_res %>% 
+            mutate(fitted_prop = perc)
+    }
+    
+    fitted_res <- fitted_res %>% 
         select(!!sym(time_var), fitted_prop) %>% 
         group_by(!!sym(time_var)) %>% 
         summarize(fitted_prop = mean(fitted_prop)) %>% 
         mutate(
             AY = c("2008-09", "2018-19"), 
             fitted_OR = c(NA, 
-                             (fitted_prop[AY=="2018-19"] / (1 - fitted_prop[AY=="2018-19"])) /
-                                 (fitted_prop[AY=="2008-09"] / (1 -fitted_prop[AY=="2008-09"]))
+                          (fitted_prop[AY=="2018-19"] / (1 - fitted_prop[AY=="2018-19"])) /
+                              (fitted_prop[AY=="2008-09"] / (1 -fitted_prop[AY=="2008-09"]))
             ),
             fitted_abs_diff = c(NA, 
                                 fitted_prop[AY=="2018-19"] - fitted_prop[AY=="2008-09"]),
             fitted_RR = c(NA, 
                           fitted_prop[AY=="2018-19"] / fitted_prop[AY=="2008-09"])
-        )
+        ) 
     
     final_df <- empirical_res %>%
         select(-!!sym(time_var)) %>% 
-        left_join(fitted_res) %>% 
+        left_join(fitted_res, by='AY') %>% 
         mutate(
             Variable = yvar
         ) %>% 

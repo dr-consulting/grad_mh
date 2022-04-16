@@ -7,17 +7,15 @@ library(glue)
 source('~/github/ATNL/grad_mh/project_config.R')
 sapply(list.files(R_DIR, full.names = TRUE), source)
 
-yvars <- list('Anxiety' = c(var_name='Q31A_anxiety_dich', data_prefix='dx_anxiety_full_covariate'),
-              'Any Psychiatric Disorder' = c(var_name='any_dx_nsduh', data_prefix='dx_nsduh_any_full_covariate'),
-              'Bipolar Disorder' = c(var_name='Q31A_bipolar_dich', data_prefix='bipolar_full_covariate'),
-              'Depression' = c(var_name='Q31A_depression_dich', data_prefix='dx_depression_full_covariate'), 
-              'Panic Attacks' = c(var_name='Q31B_panic_dich', data_prefix='panic_full_covariate'), 
-              'Schizophrenia' = c(var_name='Q31B_schizo_dich', data_prefix='dx_schizo_full_covariate'), 
-              'Suicidal Thoughts' = c(var_name='Q30J_suic_thnk_r_12mos', data_prefix='suic_thnk_full_covariate'), 
-              'Suicide Attempt' = c(var_name='Q30K_suic_try_r_12mos', data_prefix='suic_try_full_covariate'), 
-              'Poor Health' = c(var_name='global_health_dich', data_prefix='global_health_full_covariate'), 
-              'Emotional Distress' = c(var_name='neg_emo_any', data_prefix='neg_emo_logit'), 
-              'Overwhelmed or Exhausted' = c(var_name='ovrwhlm_any', data_prefix='ovrwhlm_any_logit'))
+yvars <- list('Anxiety' = c(var_name='Q31A_anxiety_dich', data_prefix='dx_anxiety'),
+              'Any Psychiatric Disorder' = c(var_name='any_dx_nsduh', data_prefix='dx_nsduh_any'),
+              'Bipolar Disorder' = c(var_name='Q31A_bipolar_dich', data_prefix='bipolar'),
+              'Depression' = c(var_name='Q31A_depression_dich', data_prefix='dx_depression'), 
+              'Panic Attacks' = c(var_name='Q31B_panic_dich', data_prefix='panic'), 
+              'Schizophrenia' = c(var_name='Q31B_schizo_dich', data_prefix='dx_schizo'), 
+              'Suicidal Thoughts' = c(var_name='Q30J_suic_thnk_r_12mos', data_prefix='suic_thnk'), 
+              'Suicide Attempt' = c(var_name='Q30K_suic_try_r_12mos', data_prefix='suic_try'), 
+              'Poor Health' = c(var_name='global_health_dich', data_prefix='global_health'))
 
 time_vars <- c('c_Time', 'quad_c_Time')
 covariates <- c('Intercept'='Intercept', 'Time'='c_Time', 'Time^2'='quad_c_Time',
@@ -50,7 +48,7 @@ for(yvar in names(yvars)){
     data_prefix <- yvars[[yvar]]['data_prefix']
     names(data_prefix) <- NULL
     
-    data_filepath <- "{POSTERIOR_OUTPUTS}/{data_prefix}.RData" %>% glue()
+    data_filepath <- "{POSTERIOR_OUTPUTS}/{data_prefix}_full_covariate.RData" %>% glue()
     
     if(file.exists(data_filepath)) {
         load(data_filepath)
@@ -85,53 +83,14 @@ for(yvar in names(yvars)){
             load(load_data_path)
         }
         else{
-            post_df <- posterior_samples(model, pars = c('b_Intercept', 'b_c_Time', 'b_quad_c_Time'))
-            names(post_df) <- c('b0', 'b1', 'b2')
-            
-            gender_prob <- table(data[["Q47_gender"]]) / nrow(data)
-            race_ethn_prob <- table(data[["race_ethn"]]) / nrow(data)
-            enrollment_prob <- table(data[["Q52_enrollment"]]) / nrow(data)
-            international_prob <- table(data[["Q55_international"]]) / nrow(data)
-            survey_method_prob <- table(data[["survey_method"]]) / nrow(data)
-            school_size_prob <- table(data[["school_size"]]) / nrow(data)
-            public_schl_prob <- table(data[["public_schl"]]) / nrow(data)
-            
-            post_df['b0'] <- post_df['b0'] + 
-                gender_prob['Male'] * fixef_tbl['Male v. Female', 'Estimate'] +
-                gender_prob['Transgender'] * fixef_tbl['Transgender v. Female', 'Estimate'] +
-                race_ethn_prob['black'] * fixef_tbl['Black v. White', 'Estimate'] +
-                race_ethn_prob['hispanic'] * fixef_tbl['Hispanic v. White', 'Estimate'] +
-                race_ethn_prob['asian'] * fixef_tbl['Asian v. White', 'Estimate'] +
-                race_ethn_prob['native'] * fixef_tbl['Native v. White', 'Estimate'] +
-                race_ethn_prob['multi'] * fixef_tbl['Multiracial v. White', 'Estimate'] +
-                race_ethn_prob['other'] * fixef_tbl['Other v. White', 'Estimate'] +
-                enrollment_prob['Part-time'] * fixef_tbl['Part-Time', 'Estimate'] +
-                international_prob['Yes'] * fixef_tbl['International', 'Estimate'] +
-                survey_method_prob['Web'] * fixef_tbl['Web Survey', 'Estimate'] +
-                school_size_prob['2,500 - 4,999 students'] * fixef_tbl['Size: 2,500-4,999 v. <2,500', 'Estimate'] +
-                school_size_prob['5,000 - 9,999 students'] * fixef_tbl['Size: 5,000-9,999 v. <2,500', 'Estimate'] +
-                school_size_prob['10,000 - 19,999 students'] * fixef_tbl['Size: 10,000-19,999 v. <2,500', 'Estimate'] +
-                school_size_prob['20,000 students or more'] * fixef_tbl['Size: >20,000 v. <2,500', 'Estimate'] +
-                public_schl_prob['1'] * fixef_tbl['Public School', 'Estimate']
-            
-            design_matrix <- data.frame(
-                intrcpt = 1,
-                time = seq(0, 10.5, by = .125), 
-                time_sq = seq(0, 10.5, by = .125)^2
-            )
-            
-            plot_df <- data.frame()
-            for(r in 1:nrow(post_df)) {
-                pred_y <- design_matrix[['intrcpt']] * post_df[['b0']][r] + 
-                    design_matrix[['time']] * post_df[['b1']][r] +
-                    design_matrix[['time_sq']] * post_df[['b2']][r]
-                
-                tmp_df <- data.frame(
-                    c_Time = design_matrix[['time']], 
-                    perc = logits_to_prob(pred_y) * 100
-                )
-                plot_df <- rbind(plot_df, tmp_df)
+            wrapper <- function(i) {
+                base_df <- create_base_pred_df(100)
+                pred_df <- create_full_pred_df(base_df, n_time_points=44, time_min=0, time_max=10.5)
+                plot_df <- create_plot_df(pred_df, 30)
+                plot_df
             }
+            
+            plot_df <- parallel::mclapply(1:100, wrapper, mc.cores = 3) %>% map_df(bind_rows)
         }
         
         plotlist[[yvar]] <- create_percent_summary_plot(

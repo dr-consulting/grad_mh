@@ -22,7 +22,7 @@ grads_model_base %>% # AY breakdown of summary stats for gender
     summarize(female = sum(Q47_gender == "Female", na.rm = TRUE), 
               male = sum(Q47_gender == "Male", na.rm = TRUE), 
               trans = sum(Q47_gender == "Transgender", na.rm = TRUE), 
-              n_nonmiss = sum(!is.na(Q47_gender)), 
+              n_nonmiss = sum(!is.na(Q47_gender)),
               female_perc = female/n_nonmiss * 100, 
               male_perc = male/n_nonmiss * 100,
               trans_perc = trans/n_nonmiss * 100) %>% 
@@ -53,7 +53,6 @@ grads_model_base %>% # AY breakdown of race / ethnicity
 
 # grand perc of race/ethnicity: 
 table(grads_model_base[['race_ethn']]) / sum(!is.na(grads_model_base[['race_ethn']])) * 100
-
 
 grads_model_base %>% # AY breakdown of international status
     group_by(!!sym(grp_var)) %>% 
@@ -114,7 +113,7 @@ grads_model_base %>% # AY breakdown of respondents per school type
     select(academic_year, ends_with('_perc')) %>% 
     print.data.frame()
 
-# global perc of public / private school attendance
+# global perc of school size distribution
 table(grads_model_base[['school_size']]) / sum(!is.na(grads_model_base[['school_size']])) * 100
 
 #------------------
@@ -140,7 +139,7 @@ for(var in neg_vars){
     grads_model_base %>% # AY breakdown of neg emotion variables
         group_by(!!sym(grp_var)) %>% 
         summarize(cnt = sum(!!sym(var) == 1, na.rm = TRUE), 
-                  n_nonmiss = sum(!is.na(Q55_international)), 
+                  n_nonmiss = sum(!is.na(!!sym(var))), 
                   perc = cnt/n_nonmiss * 100) %>% 
         print.data.frame()
     print("-------------------------------------------------------")
@@ -169,6 +168,7 @@ ovrwhlm_vars <- c('Q30B_overwhelmed_r', 'Q30C_exhausted_r') %>%
 
 # Explicitly choosing to drop everyone that has at least one missing - don't want to count as valid 0's in a count 
 grads_model_base[['ovrwhlm_cnt']] <- rowSums(grads_model_base[,ovrwhlm_vars])
+grads_model_base[['ovrwhlm_any']] <- ifelse(grads_model_base[['ovrwhlm_cnt']] > 0, 1, 0)
 
 for(var in ovrwhlm_vars){
     print(glue("AY breakdown for {var}"))
@@ -177,7 +177,7 @@ for(var in ovrwhlm_vars){
     grads_model_base %>% # AY breakdown of overwhelmed variables
         group_by(!!sym(grp_var)) %>% 
         summarize(cnt = sum(!!sym(var) == 1, na.rm = TRUE), 
-                  n_nonmiss = sum(!is.na(Q55_international)), 
+                  n_nonmiss = sum(!is.na(!!sym(var))), 
                   perc = cnt/n_nonmiss * 100) %>% 
         print.data.frame()
     print("-------------------------------------------------------")
@@ -201,6 +201,30 @@ grads_model_base %>% # AY breakdown of average counts
 mean(grads_model_base[["ovrwhlm_cnt"]], na.rm=TRUE)
 sd(grads_model_base[["ovrwhlm_cnt"]], na.rm=TRUE)
 
+# Creating summary for the any negative emotion item 
+# Respondents received a 1 if they endorsed any negative emotion items in the past two weeks, 0 otherwise
+print(glue("AY breakdown for neg_emo_any"))
+print("")
+print("-------------------------------------------------------")
+grads_model_base %>% # AY breakdown of overwhelmed variables
+    group_by(!!sym(grp_var)) %>% 
+    summarize(cnt = sum(neg_emo_any == 1, na.rm = TRUE), 
+              n_nonmiss = sum(!is.na(neg_emo_any)), 
+              perc = cnt/n_nonmiss * 100) %>% 
+    print.data.frame()
+print("-------------------------------------------------------")
+
+# Created an analogous any overwhelm - for symmetry
+print(glue("AY breakdown for ovrwhlm_any"))
+print("")
+print("-------------------------------------------------------")
+grads_model_base %>% # AY breakdown of overwhelmed variables
+    group_by(!!sym(grp_var)) %>% 
+    summarize(cnt = sum(ovrwhlm_any == 1, na.rm = TRUE), 
+              n_nonmiss = sum(!is.na(ovrwhlm_any)), 
+              perc = cnt/n_nonmiss * 100) %>% 
+    print.data.frame()
+print("-------------------------------------------------------")
 #----------------------------------------------------------------------------------------------------------------------
 # Table 5 - Suicidality, Past Year
 #----------------------------------------------------------------------------------------------------------------------
@@ -214,7 +238,7 @@ for(var in suic_vars){
     grads_model_base %>% # AY breakdown of neg emotion variables
         group_by(!!sym(grp_var)) %>% 
         summarize(cnt = sum(!!sym(var) == 1, na.rm = TRUE), 
-                  n_nonmiss = sum(!is.na(Q55_international)), 
+                  n_nonmiss = sum(!is.na(!!sym(var))), 
                   perc = cnt/n_nonmiss * 100) %>% 
         print.data.frame()
     print("-------------------------------------------------------")
@@ -244,7 +268,7 @@ for(var in dx_cols){
     grads_model_base %>% # AY breakdown of dx and tx variables
         group_by(!!sym(grp_var)) %>% 
         summarize(cnt = sum(!!sym(var) == 1, na.rm = TRUE), 
-                  n_nonmiss = sum(!is.na(Q55_international)), 
+                  n_nonmiss = sum(!is.na(!!sym(var))), 
                   perc = cnt/n_nonmiss * 100) %>% 
         print.data.frame()
     print("-------------------------------------------------------")
@@ -258,3 +282,24 @@ for(var in dx_cols){
     perc_miss <- sum(is.na(grads_model_base[[var]])) / nrow(grads_model_base) *100
     print('Percentage missing{round(perc_miss, 2)}%' %>% glue())
 }
+
+#-----------------------------------------------------------------------------------
+# Table - global health statistics
+#-----------------------------------------------------------------------------------
+# TODO: remove this and other computation code to a single, streamlined set of processing scripts 
+grads_model_base <- grads_model_base %>% 
+    mutate(
+        global_health_dich = ifelse(global_health_r %in% c('Poor', 'Fair'), 1, 0)
+    )
+
+
+print(glue("AY breakdown for (poor) global health"))
+print("")
+print("-------------------------------------------------------")
+grads_model_base %>% # AY breakdown of overwhelmed variables
+    group_by(!!sym(grp_var)) %>% 
+    summarize(cnt = sum(global_health_dich == 1, na.rm = TRUE), 
+              n_nonmiss = sum(!is.na(global_health_dich)), 
+              perc = cnt/n_nonmiss * 100) %>% 
+    print.data.frame()
+print("-------------------------------------------------------")

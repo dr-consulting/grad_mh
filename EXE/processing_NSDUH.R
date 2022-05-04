@@ -98,7 +98,6 @@ nsduh_study_df[['suic_try_12mos']] <- ifelse(is.na(nsduh_study_df[['suic_try_12m
                                                  nsduh_study_df[['suic_thnk_12mos']] == 'No', 
                                              'No', nsduh_study_df[['suic_try_12mos']])
 
-
 save(list = c('nsduh_study_df', nsduh_dfs), 
      file = '{DATA_DIR}/NSDUH/nsduh_study_data.RData' %>% glue())
 

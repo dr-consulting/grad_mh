@@ -10,11 +10,8 @@ source('~/github/ATNL/grad_mh/project_config.R')
 sapply(list.files(R_DIR, full.names = TRUE), source)
 load("{DATA_DIR}/ACHA-II/acha_grad_students_base_{DATA_VERSION}.RData" %>% glue::glue())
 
-save(list = c('grads_model_base', 'DATA_VERSION'), 
-     file = "{DATA_DIR}/ACHA-II/acha_grad_students_base_{DATA_VERSION}.RData" %>% glue::glue())
-
 id_var <- "school_id"
-y_var <- "Q30G_anxiety_r_2wks"
+y_var <- "Q30B_overwhelmed_r_2wks"
 lv1_vars <- c('c_Time', 'quad_c_Time', 'c_Q46_age', 'Q47_gender', 'race_ethn', 'Q52_enrollment', 'Q55_international', 
               'survey_method')
 lv2_int_vars <- c('school_size', 'public_schl')
@@ -53,5 +50,5 @@ res <- logistic_model_wrapper(
     iter = 7500, 
     chains = 3, 
     control_list = list(adapt_delta = .95), 
-    model_save_name = "anxious_full_covariate"
+    model_save_name = "ovrwhlm_bin"
 )

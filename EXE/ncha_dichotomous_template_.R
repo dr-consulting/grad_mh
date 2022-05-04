@@ -14,10 +14,19 @@ yvars <- list('Anxiety' = c(var_name='Q31A_anxiety_dich', data_prefix='dx_anxiet
               'Panic Attacks' = c(var_name='Q31B_panic_dich', data_prefix='panic_full_covariate'), 
               'Schizophrenia' = c(var_name='Q31B_schizo_dich', data_prefix='dx_schizo_full_covariate'), 
               'Suicidal Thoughts' = c(var_name='Q30J_suic_thnk_r_12mos', data_prefix='suic_thnk_full_covariate'), 
-              'Suicide Attempt' = c(var_name='Q30K_suic_try_r_12mos', data_prefix='suic_try_full_covariate'), 
+              'Suicide Attempt' = c(var_name='Q30K_suic_try_r_12mos', data_prefix='suic_try_full_covariate'),
               'Poor Health' = c(var_name='global_health_dich', data_prefix='global_health_full_covariate'), 
-              'Emotional Distress' = c(var_name='neg_emo_any', data_prefix='neg_emo_logit'), 
-              'Overwhelmed or Exhausted' = c(var_name='ovrwhlm_any', data_prefix='ovrwhlm_any_logit'))
+              'Emotional Distress' = c(var_name='neg_emo_any', data_prefix='neg_emo_logit'),
+              'Overwhelmed' = c(var_name='Q30B_overwhelmed_r_2wks', data_prefix='ovrwhlm_bin'),
+              'Exhausted' = c(var_name='Q30C_exhausted_r_2wks', data_prefix='exhausted_bin'),
+              'Overwhelmed or Exhausted' = c(var_name='ovrwhlm_any', data_prefix='ovrwhlm_any_logit'), 
+              'Sad'= c(var_name="Q30E_sad_r_2wks", data_prefix='sad_full_covariate'),
+              'Anger'= c(var_name="Q30H_anger_r_2wks", data_prefix='anger_full_covariate'),
+              'Too Depressed to Function' = c(var_name="Q30F_depressed_r_2wks", data_prefix='depressed_full_covariate'), 
+              'Overwhelming Anxiety' = c(var_name="Q30G_anxiety_r_2wks", data_prefix='anxious_full_covariate'), 
+              'Lonely' = c(var_name="Q30D_lonely_r_2wks", data_prefix='lonely_full_covariate'), 
+              'Hopeless' = c(var_name="Q30A_hopeless_r_2wks", data_prefix='hopeless_full_covariate')
+              )
 
 time_vars <- c('c_Time', 'quad_c_Time')
 covariates <- c('Intercept'='Intercept', 'Time'='c_Time', 'Time^2'='quad_c_Time',

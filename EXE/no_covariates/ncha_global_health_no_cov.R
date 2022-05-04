@@ -7,7 +7,8 @@ load("{DATA_DIR}/ACHA-II/acha_grad_students_base_{DATA_VERSION}.RData" %>% glue:
 
 grads_model_base <- grads_model_base %>% 
     mutate(
-        global_health_dich = ifelse(global_health_r %in% c('Poor', 'Fair'), 1, 0)
+        global_health_dich = ifelse(global_health_r %in% c('Poor', 'Fair'), 1, 0),
+        global_health_dich = ifelse(is.na(global_health_r), NA, global_health_dich)
     )
 
 id_var <- "school_id"

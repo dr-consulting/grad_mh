@@ -393,20 +393,50 @@ create_bin_summary_table <- function(original_df, fitted_df, yvar, begin=0, end=
             mutate(fitted_prop = perc)
     }
     
+    # Temporary hack to enable correct estimation of CIs
+    if('perc_lb' %in% names(fitted_res)){
+        fitted_res <- fitted_res %>% 
+            select(!!sym(time_var), fitted_prop, perc_ub, perc_lb) %>% 
+            group_by(!!sym(time_var)) %>% 
+            summarize(ub_prop_95 = mean(perc_ub) / 100, 
+                      lb_prop_95 = mean(perc_lb) / 100, 
+                      fitted_prop = mean(fitted_prop))
+    }
+    else{
+        fitted_res <- fitted_res %>% 
+            select(!!sym(time_var), fitted_prop) %>% 
+            group_by(!!sym(time_var)) %>% 
+            summarize(ub_prop_95 = quantile(fitted_prop, .975), 
+                      lb_prop_95 = quantile(fitted_prop, .025), 
+                      fitted_prop = mean(fitted_prop))    
+    }
     fitted_res <- fitted_res %>% 
-        select(!!sym(time_var), fitted_prop) %>% 
-        group_by(!!sym(time_var)) %>% 
-        summarize(fitted_prop = mean(fitted_prop)) %>% 
         mutate(
             AY = c("2008-09", "2018-19"), 
             fitted_OR = c(NA, 
                           (fitted_prop[AY=="2018-19"] / (1 - fitted_prop[AY=="2018-19"])) /
-                              (fitted_prop[AY=="2008-09"] / (1 -fitted_prop[AY=="2008-09"]))
+                              (fitted_prop[AY=="2008-09"] / (1 - fitted_prop[AY=="2008-09"]))
+            ),
+            fitted_OR_lb = c(NA, 
+                             (lb_prop_95[AY=="2018-19"] / (1 - lb_prop_95[AY=="2018-19"])) /
+                              (ub_prop_95[AY=="2008-09"] / (1 - ub_prop_95[AY=="2008-09"]))
+            ),
+            fitted_OR_ub = c(NA, 
+                             (ub_prop_95[AY=="2018-19"] / (1 - ub_prop_95[AY=="2018-19"])) /
+                                 (lb_prop_95[AY=="2008-09"] / (1 - lb_prop_95[AY=="2008-09"]))
             ),
             fitted_abs_diff = c(NA, 
                                 fitted_prop[AY=="2018-19"] - fitted_prop[AY=="2008-09"]),
+            fitted_abs_diff_lb = c(NA, 
+                                   lb_prop_95[AY=="2018-19"] - ub_prop_95[AY=="2008-09"]),
+            fitted_abs_diff_ub = c(NA, 
+                                   ub_prop_95[AY=="2018-19"] - lb_prop_95[AY=="2008-09"]),
             fitted_RR = c(NA, 
-                          fitted_prop[AY=="2018-19"] / fitted_prop[AY=="2008-09"])
+                          fitted_prop[AY=="2018-19"] / fitted_prop[AY=="2008-09"]),
+            fitted_RR_lb = c(NA, 
+                             lb_prop_95[AY=="2018-19"] / ub_prop_95[AY=="2008-09"]),
+            fitted_RR_ub = c(NA, 
+                             ub_prop_95[AY=="2018-19"] / lb_prop_95[AY=="2008-09"])
         ) 
     
     final_df <- empirical_res %>%
@@ -417,11 +447,19 @@ create_bin_summary_table <- function(original_df, fitted_df, yvar, begin=0, end=
         ) %>% 
         select(Variable, AY, 
                empirical_prop, empirical_abs_diff, empirical_RR, empirical_OR, 
-               fitted_prop, fitted_abs_diff, fitted_RR, fitted_OR)
+               fitted_prop, fitted_abs_diff, fitted_RR, fitted_OR, 
+               lb_prop_95, ub_prop_95, 
+               fitted_abs_diff_lb, fitted_abs_diff_ub,
+               fitted_RR_lb, fitted_RR_ub,
+               fitted_OR_lb, fitted_OR_ub)
     
     colnames(final_df) <- c("Variable", "Academic Year", 
                             paste("Observed", c("Probability", "Absolute Change", "Relative Change", "Odds Ratio")), 
-                            paste("Fitted", c("Probability", "Absolute Change", "Relative Change", "Odds Ratio")))
+                            paste("Fitted", c("Probability", "Absolute Change", "Relative Change", "Odds Ratio")), 
+                            paste("CI -", c("Probability, LB", "Probability, UB", 
+                                            "Absolute Change, LB", "Absolute Change, UB", 
+                                            "Relative Change, LB", "Relative Change, UB", 
+                                            "Odds Ratio, LB", "Odds Ratio, UB")))
     
     return(final_df)
 } 

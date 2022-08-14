@@ -2,7 +2,7 @@
 library(glue)
 library(magrittr)
 
-LOCAL_REPO <- '~/github/ATNL/grad_mh'
+LOCAL_REPO <- '~/grad_mh'
 DATA_DIR <- paste0(LOCAL_REPO, '/', 'data')
 R_DIR <- paste0(LOCAL_REPO, '/', 'R')
 MAPS_DIR <- paste0(LOCAL_REPO, '/', 'data_maps')

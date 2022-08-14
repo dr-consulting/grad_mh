@@ -4,7 +4,16 @@ library(tidybayes)
 library(tidyverse)
 library(glue)
 
-source('~/github/ATNL/grad_mh/project_config.R')
+BASE_FILE <- '~/grad_mh/project_config.R'
+
+# If missing the config file raise early.
+# Likely just opened the repo in a different file system
+if(!file.exists(BASE_FILE)){
+    stop('ERROR: Missing project config file. {BASE_FILE}' %>% glue())
+}
+
+source(BASE_FILE)
+
 sapply(list.files(R_DIR, full.names = TRUE), source)
 
 yvars <- list('Anxiety' = c(var_name='Q31A_anxiety_dich', data_prefix='dx_anxiety_no_cov'),

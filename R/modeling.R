@@ -9,6 +9,7 @@ library(tidyverse)
 logistic_model_wrapper <- function(data, prior_config, y_var, id_var, lv1_vars, lv1_ran_vars, lv2_int_vars,
                                    output_folder, warmup, iter, chains, control_list, future_arg = FALSE, 
                                    model_save_name=NULL){
+    # TODO: update or remove prior_config parameter (currently not used)
     start_time <- Sys.time()
     results_list <- list()
     results_list[["model_data"]] <- data
@@ -54,7 +55,7 @@ logistic_model_wrapper <- function(data, prior_config, y_var, id_var, lv1_vars, 
 } 
 
 
-#' ordinal regression using a cumulative log-odds model strucutre that wraps brms functions.
+#' ordinal regression using a cumulative log-odds model structure that wraps brms functions.
 #' 
 #' In addition to running the model and returning the output, the function also accepts several arguments that govern 
 #' the saving of the model object and output files (required for post-processing). Currently this patricular function

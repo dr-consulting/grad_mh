@@ -16,3 +16,4 @@
 */*latex/*
 */.~lock*
 *.Rhistory
+*.DS_Store

@@ -2,7 +2,7 @@
 library(glue)
 library(magrittr)
 
-LOCAL_REPO <- '~/grad_mh'
+LOCAL_REPO <- '~/Desktop/grad_mh'
 DATA_DIR <- paste0(LOCAL_REPO, '/', 'data')
 R_DIR <- paste0(LOCAL_REPO, '/', 'R')
 MAPS_DIR <- paste0(LOCAL_REPO, '/', 'data_maps')
@@ -132,43 +132,43 @@ PERC_PLOT_CONFIG <- list(
 
 NSDUH_PLOT_CONFIG <- list(
     'Any Psychiatric Disorder' = list(
-        y_breaks=seq(0, 60, by=10), 
-        y_labels=paste0(seq(0, 60, by=10), "%"), 
-        y_limits=c(0,61)
+        y_breaks=seq(0, 40, by=10), 
+        y_labels=paste0(seq(0, 40, by=10), "%"), 
+        y_limits=c(0,42)
     ),
     'Suicidal Thoughts' = list(
-        y_breaks=seq(0, 15, by=5), 
-        y_labels=paste0(seq(0, 15, by=5), "%"), 
-        y_limits=c(0, 16)
+        y_breaks=seq(0, 10, by=2.5), 
+        y_labels=paste0(seq(0, 10, by=2.5), "%"), 
+        y_limits=c(0, 10.5)
     ), 
     'Suicide Attempt' = list(
-        y_breaks=seq(0, 5, by=1), 
-        y_labels=paste0(seq(0, 5, by=1), "%"), 
-        y_limits=c(0, 5.1)
+        y_breaks=seq(0, 1, by=.25), 
+        y_labels=paste0(seq(0, 1, by=.25), "%"), 
+        y_limits=c(0, 1.05)
     ), 
     'Poor Health' = list(
-        y_breaks=seq(0, 30, by=10), 
-        y_labels=paste0(seq(0, 30, by=10), "%"), 
-        y_limits=c(0,31)
+        y_breaks=seq(0, 20, by=5), 
+        y_labels=paste0(seq(0, 20, by=5), "%"), 
+        y_limits=c(0,21)
     ), 
     'Matched Any Psychiatric Disorder' = list(
-        y_breaks=seq(0, 60, by=10), 
-        y_labels=paste0(seq(0, 60, by=10), "%"), 
-        y_limits=c(0,61)
+        y_breaks=seq(0, 40, by=10), 
+        y_labels=paste0(seq(0, 40, by=10), "%"), 
+        y_limits=c(0,42)
     ),
     'Matched Suicidal Thoughts' = list(
-        y_breaks=seq(0, 15, by=5), 
-        y_labels=paste0(seq(0, 15, by=5), "%"), 
-        y_limits=c(0, 16)
+        y_breaks=seq(0, 10, by=2.5), 
+        y_labels=paste0(seq(0, 10, by=2.5), "%"), 
+        y_limits=c(0, 10.5)
     ), 
     'Matched Suicide Attempt' = list(
-        y_breaks=seq(0, 5, by=1), 
-        y_labels=paste0(seq(0, 5, by=1), "%"), 
-        y_limits=c(0, 5.1)
+        y_breaks=seq(0, 1, by=.25), 
+        y_labels=paste0(seq(0, 1, by=.25), "%"), 
+        y_limits=c(0, 1.05)
     ), 
     'Matched Poor Health' = list(
-        y_breaks=seq(0, 30, by=10), 
-        y_labels=paste0(seq(0, 30, by=10), "%"), 
-        y_limits=c(0,31)
+        y_breaks=seq(0, 20, by=5), 
+        y_labels=paste0(seq(0, 20, by=5), "%"), 
+        y_limits=c(0,21)
     )
 )

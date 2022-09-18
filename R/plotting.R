@@ -239,22 +239,23 @@ create_plot_df <- function(df, n_samples) {
 
 create_percent_summary_plot <- function(fitted_df, group_df, title, y_breaks, y_labels, y_limits, x_breaks, x_labels, 
                                         color_pal, caption=NULL, subtitle=NULL) {
+    clr_palette <- RColorBrewer::brewer.pal(9, color_pal)
     fitted_df %>% 
         ggplot(aes(x = c_Time, y = perc)) +
         stat_lineribbon(.width = .95, 
                         aes(fill = "95% Credibility Interval", 
                             color = "MLM Fit"), 
-                        alpha = .85, point_interval = mean_qi) + 
+                        alpha = .75, point_interval = mean_qi) + 
         scale_color_manual("MLM Model Posterior", aesthetics = c("color", "fill"),
                            breaks = c("MLM Fit", "95% Credibility Interval"), 
-                           values = c("95% Credibility Interval" = RColorBrewer::brewer.pal(9, color_pal)[2], 
-                                      "MLM Fit" = RColorBrewer::brewer.pal(9, color_pal)[9])) +
+                           values = c("95% Credibility Interval" = clr_palette[4], 
+                                      "MLM Fit" = clr_palette[9])) +
         scale_x_continuous(breaks = x_breaks, labels = x_labels) +
         scale_y_continuous(breaks = y_breaks, labels = y_labels) +
         coord_cartesian(ylim = y_limits) +
-        geom_jitter(data=grp_df, aes(x = !!sym(xvar), y = perc, size = count), 
-                    alpha = .1875, width = .075, color = RColorBrewer::brewer.pal(9, color_pal)[8], 
-                    fill = RColorBrewer::brewer.pal(9, color_pal)[3]) +
+        geom_jitter(data=group_df, aes(x = !!sym(xvar), y = perc, size = count), 
+                    alpha = .1875, width = .075, color = clr_palette[8], 
+                    fill = clr_palette[2]) +
         theme_bw() +
         labs(x = "Year", 
              y = "Percentage", 
@@ -264,10 +265,11 @@ create_percent_summary_plot <- function(fitted_df, group_df, title, y_breaks, y_
              subtitle = subtitle, 
              caption = caption) + 
         scale_size(breaks = c(500, 1000, 2000, 4000), labels = c("500", "1,000", "2,000", "4,000")) +
-        guides(color = guide_legend(order = 1, 
-                                    override.aes = list(lwd = c(1, 5))),
+        guides(color = guide_legend(order = 1,
+                                    override.aes = list(lwd = c(1, 5), 
+                                                        fill = NA)),
                size = guide_legend(order = 2),
-               fill = FALSE) +
+               fill = 'none') +
         theme(legend.title = element_text(size = 14), 
               legend.text = element_text(size = 12))
 }

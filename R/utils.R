@@ -311,7 +311,11 @@ find_dual_factor_final_model <- function(base_model, data, ordered_vars, valid_c
 }
 
 
-#' Calculates coefficient given a lambda matrix returned from a fitted lavaan object - or any other loading matrix
+#' Calculates coefficient given a lambda matrix returned from a fitted 
+#' lavaan object - or any other factor loading matrix formatted in a similar 
+#' structure
+#' 
+#' 
 
 coefficient_H <- function(lamdba){
     lambda <- as.matrix(lamdba)
@@ -343,17 +347,17 @@ create_bin_summary_table <- function(original_df, fitted_df, yvar, begin=0, end=
                 group_by(!!sym(time_var)) %>% 
                 summarize(empirical_prop = sum(!!sym(yvar) * weights, na.rm = TRUE) / sum(weights, na.rm = TRUE))
         }
-        else if('new_weights' %in% names(original_df)) {
+        else if('matched_weights' %in% names(original_df)) {
             empirical_res <- original_df %>% 
                 filter(!!sym(time_var) %in% c(begin, end)) %>% 
                 group_by(!!sym(time_var)) %>% 
-                summarize(empirical_prop = sum(!!sym(yvar) * new_weights, na.rm = TRUE) / sum(new_weights, na.rm = TRUE) )
+                summarize(empirical_prop = sum(!!sym(yvar) * matched_weights, na.rm = TRUE) / sum(matched_weights, na.rm = TRUE) )
         }
         else{
             stop('ERROR could not find expected weights variable')
         }
-        
     }
+  
     else{
         empirical_res <- original_df %>% 
             filter(!!sym(time_var) %in% c(begin, end)) %>% 

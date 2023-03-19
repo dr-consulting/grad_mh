@@ -1,3 +1,4 @@
+*.swp
 *.png
 *.jpg
 *.jpeg
@@ -13,3 +14,9 @@
 *.csv
 */*_cache/*
 */*latex/*
+*/.~lock*
+*.Rhistory
+*.DS_Store
+*.zip
+*.eps
+*.idea/

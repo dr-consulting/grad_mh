@@ -1,0 +1,75 @@
+---
+title: "DeYoung et al. model equations"
+author: "Matthew Barstead, Ph.D."
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+## Equation 1 - Quadratic
+
+$$
+\begin{matrix}
+    y_{ij} \sim Binomial(1, p_{ij}) \\
+    log\Big(\frac{p_{ij}}{1 - p_{ij}}\Big) = \beta_{0j} + \beta_{1j}Time + \beta_{2j}Time^2 + \epsilon_{ij} \\
+    \begin{bmatrix}
+        \beta_{0j} \\
+        \beta_{1j} \\
+        \beta_{2j}
+    \end{bmatrix} 
+    \sim 
+    Normal(
+        \begin{bmatrix}
+            \gamma_{00} + \sigma_{0j} \\
+            \gamma_{10} + \sigma_{1j} \\
+            \gamma_{20}
+    \end{bmatrix}, 
+    \Sigma
+)
+\end{matrix}
+$$
+
+## Equation 2 - Linear 
+
+$$
+\begin{matrix}
+    log\Big(\frac{p_{ij}}{1 - p_{ij}}\Big) = \beta_{0j} + \beta_{1j}Time + \epsilon_{ij} \\
+    \begin{bmatrix}
+        \beta_{0j} \\
+        \beta_{1j}
+    \end{bmatrix} 
+    \sim 
+    Normal(
+        \begin{bmatrix}
+            \gamma_{00} + \sigma_{0j} \\
+            \gamma_{10} + \sigma_{1j}
+    \end{bmatrix}, 
+    \Sigma
+)
+\end{matrix}
+$$
+
+## Equation 3 - Adding arbitrary numbers of covariates
+
+$$
+\begin{matrix}
+    log\Big(\frac{p_{ij}}{1 - p_{ij}}\Big) = \beta_{0j} + \beta_{1j}Time + \beta_{2j}Time^2 + \beta_{3j}X_3 + ... \beta_{pj}X_p + \epsilon_{ij} \\
+    \begin{bmatrix}
+        \beta_{0j} \\
+        \beta_{1j} \\
+        \beta_{2j} \\
+        ... \\
+        \beta_{pj}
+    \end{bmatrix} 
+    \sim 
+    Normal(
+        \begin{bmatrix}
+            \gamma_{00} + \gamma_{01}U_1 + ... \gamma_{0c}U_c + \sigma_{0j} \\
+            \gamma_{10} + \sigma_{1j} \\
+            \gamma_{20} \\
+            ... \\
+            \gamma_{p0}
+    \end{bmatrix}, 
+    \Sigma
+)
+\end{matrix}
+$$

@@ -1,21 +1,25 @@
-library(brms)
-library(modelr)
-library(tidybayes)
-library(tidyverse)
-library(glue)
+BASE_FILE <- '~/Desktop/grad_mh/project_config.R'
+# If missing the config file raise early.
+# Likely just opened the repo in a different file system
+if(!file.exists(BASE_FILE)){
+    stop('ERROR: Missing project config file. {BASE_FILE}' %>% glue())
+}
 
-# Loading first so I can kick out the unneeded data sets from each year
-load('~/github/ATNL/grad_mh/data/NSDUH/nsduh_study_data.RData')
-remove(list = ls()[ls() != 'nsduh_study_df'])
+source(BASE_FILE)
 
-source('~/github/ATNL/grad_mh/project_config.R')
+load("{DATA_DIR}/NSDUH/nsduh_study_data.RData" %>% glue())
+
+# Drop the extra data to reduce memory burden
+remove_objects <- ls()[stringr::str_starts(ls(), 'NSDUH_.*_df_list')]
+remove(list = remove_objects)
+
 sapply(list.files(R_DIR, full.names = TRUE), source)
 
 # Note may require specific transforms in the tidy data creation step below. 
 y_var <- "suic_thnk_12mos"
 SAVE_FILEPATH <- '{POSTERIOR_OUTPUTS}/nsduh_{y_var}.RData' %>% glue()
 
-# Create a centered time variable
+# Apply the adults filter, Ensure correct mapping of yes and no responses
 nsduh_adults_df <- nsduh_study_df %>%
     filter(adult_mask == 1) %>% 
     mutate(
@@ -36,9 +40,9 @@ brms_fit <- brm(
     brms_form, 
     data = nsduh_adults_df, 
     prior = priors_config,
-    iter = 4000, 
-    warmup = 2500, 
-    control = list(adapt_delta = .99), 
+    iter = 7500, 
+    warmup = 5000, 
+    control = list(adapt_delta = .95), 
     cores = 3, 
     chains = 3
 )

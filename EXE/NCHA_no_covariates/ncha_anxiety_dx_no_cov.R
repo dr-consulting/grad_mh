@@ -1,7 +1,6 @@
 # Base modeling script - starting off with simple analysis
 DATA_VERSION <- "2021-02-04"
 
-
 BASE_FILE <- '~/Desktop/grad_mh/project_config.R'
 
 # If missing the config file raise early.

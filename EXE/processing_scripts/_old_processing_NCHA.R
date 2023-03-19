@@ -1,10 +1,11 @@
 # Processes, combines, transforms and saves NCHA data sets
+# This is outdated do not use
 library(glue)
 library(haven)
 library(tidyverse)
 
 # File containing all functions needed to process and clean data used in project
-source('~/github/ATNL/grad_mh/project_config.R')
+source('~/Desktop/grad_mh/project_config.R')
 sapply(list.files(R_DIR, full.names = TRUE), source)
 
 # 2008 - 2011 data 

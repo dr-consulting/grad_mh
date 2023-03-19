@@ -14,12 +14,6 @@ sapply(list.files(R_DIR, full.names = TRUE), source)
 
 load("{DATA_DIR}/ACHA-II/acha_grad_students_base_{DATA_VERSION}.RData" %>% glue::glue())
 
-neg_vars <- c("Q30A_hopeless_r", "Q30D_lonely_r", "Q30E_sad_r", "Q30F_depressed_r", "Q30G_anxiety_r", "Q30H_anger_r") %>% 
-    paste(sep = '_', '2wks')
-
-save(list = c('grads_model_base', 'DATA_VERSION'), 
-     file = "{DATA_DIR}/ACHA-II/acha_grad_students_base_{DATA_VERSION}.RData" %>% glue::glue())
-
 id_var <- "school_id"
 y_var <- "neg_emo_any"
 lv1_vars <- c('c_Time', 'quad_c_Time', 'c_Q46_age', 'Q47_gender', 'race_ethn', 'Q52_enrollment', 'Q55_international', 

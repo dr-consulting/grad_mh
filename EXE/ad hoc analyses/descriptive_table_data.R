@@ -1,3 +1,5 @@
+# This script produces a series of summary stats outputs 
+# It can be piped to an output text file for viewing later
 # Acquiring summary statistics for ACHA-NCHA II
 library(tidyverse)
 library(glue)
@@ -286,7 +288,6 @@ for(var in dx_cols){
 #-----------------------------------------------------------------------------------
 # Table - global health statistics
 #-----------------------------------------------------------------------------------
-# TODO: remove this and other computation code to a single, streamlined set of processing scripts 
 grads_model_base <- grads_model_base %>% 
     mutate(
         global_health_dich = ifelse(global_health_r %in% c('Poor', 'Fair'), 1, 0)

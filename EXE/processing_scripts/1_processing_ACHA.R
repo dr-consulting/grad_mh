@@ -4,7 +4,7 @@ library(haven)
 library(tidyverse)
 
 # File containing all functions needed to process and clean data used in project
-source('~/github/ATNL/grad_mh/project_config.R')
+source('~/Desktop/grad_mh/project_config.R')
 sapply(list.files(R_DIR, full.names = TRUE), source)
 
 # 2008 - 2011 data 
@@ -57,6 +57,8 @@ complete_study_df <- rbind(
     acha_F11_S15_df_list[["study_df"]], 
     acha_F15_S19_df_list[["study_df"]]
 ) %>% 
+    # This recodes missing values on race checklist items to 0
+    mutate_at(.vars=race_vars, .funs = function(x) ifelse(is.na(x), 0, x)) %>% 
     mutate(
         # DeYoung wants PERMID name to be present
         PERMID = school_id,
@@ -84,8 +86,9 @@ complete_study_df <- rbind(
         # Create dichotomous variables for "diagnosis" 
         across(starts_with("Q31"), 
                .fns = list(dx = ~ifelse(. == "No", 0, 1)), 
-               .names = "{col}_dich"), 
-        race_ethn = ifelse(rowSums(.[race_vars], na.rm = TRUE) > 1, "multi", NA), 
+               .names = "{col}_dich"),
+        tot_race = rowSums(.[race_vars], na.rm = TRUE), 
+        race_ethn = ifelse(tot_race > 1, "multi", NA), 
         race_ethn = ifelse(Q54_white == 1 & is.na(race_ethn), "white", race_ethn), 
         race_ethn = ifelse(Q54_black == 1 & is.na(race_ethn), 'black', race_ethn), 
         race_ethn = ifelse(Q54_hispanic == 1 & is.na(race_ethn), 'hispanic', race_ethn), 
@@ -94,9 +97,25 @@ complete_study_df <- rbind(
         race_ethn = ifelse(Q54_biracial == 1 & is.na(race_ethn), 'multi', race_ethn),
         race_ethn = ifelse(Q54_other == 1 & is.na(race_ethn), 'other', race_ethn), 
         race_ethn = forcats::fct_relevel(race_ethn, 'white', 'black', 'hispanic', 'asian', 'native', 'multi', 'other'), 
+        # Variable to be used for creating a consistent mapping with NSDUH peers
+        # The slight discrepancies between variables are due to missingness on the Hispanic variable
+        # KD Version
+        RaceRecode_NSDUH = ifelse(tot_race == 0, NA, "TBD"),
+        RaceRecode_NSDUH = ifelse(Q54_white == 1 & tot_race == 1, 'white', RaceRecode_NSDUH),
+        RaceRecode_NSDUH = ifelse(Q54_black == 1 & tot_race == 1, 'black', RaceRecode_NSDUH),
+        RaceRecode_NSDUH = ifelse(Q54_asian == 1 & tot_race == 1, 'asian', RaceRecode_NSDUH),
+        RaceRecode_NSDUH = ifelse(Q54_native == 1 & tot_race == 1, 'native', RaceRecode_NSDUH),
+        RaceRecode_NSDUH = ifelse(Q54_other == 1 & tot_race == 1, 'other', RaceRecode_NSDUH),
+        RaceRecode_NSDUH = ifelse(Q54_biracial == 1 & tot_race == 1, 'multi', RaceRecode_NSDUH),
+        RaceRecode_NSDUH = ifelse(Q54_hispanic == 1 & tot_race == 1, 'hispanic', RaceRecode_NSDUH),
+        RaceRecode_NSDUH = ifelse(Q54_hispanic == 1 & tot_race > 1, 'hispanic', RaceRecode_NSDUH),
+        RaceRecode_NSDUH = ifelse(Q54_hispanic == 0 & tot_race > 1, 'multi', RaceRecode_NSDUH),
+        RaceRecode_NSDUH = forcats::fct_relevel(RaceRecode_NSDUH, 'white', 'black', 'hispanic', 'asian', 'native', 'multi', 'other'),
+        # school size
         school_size = forcats::fct_relevel(school_size, "< 2,500 students", "2,500 - 4,999 students", 
                                            "5,000 - 9,999 students", "10,000 - 19,999 students", 
-                                           "20,000 students or more"), 
+                                           "20,000 students or more"),
+        # Convert survey period to factor
         survey_period = forcats::fct_relevel(survey_period, 
                                              "Fall 2008", "Spring 2009", 
                                              "Fall 2009", "Spring 2010", 

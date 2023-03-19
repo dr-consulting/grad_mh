@@ -1,3 +1,4 @@
+# View summary statistics and missingness for key variables
 grads_model_base %>% 
     group_by(academic_year) %>% 
     summarize(mean_age = mean(Q46_age, na.rm = TRUE), 
@@ -42,6 +43,4 @@ grads_model_base %>%
     psych::describe() %>% 
     select(n) %>% 
     mutate(perc_miss = (1 - n / nrow(grads_model_base)) * 100)
-
-haven::write_sav(grads_model_base, path = "~/github/ATNL/grad_mh/data/ACHA-II/grad_students_modeling_2021-02-04_v2.sav")
 

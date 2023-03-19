@@ -7,8 +7,14 @@ library(magrittr)
 #' A single file or vector of file names. There is no need to include .RData in the file name when identifying a subset 
 #' of files (or a single file). Note that this function assumes that the only period in the fil
 #' 
+#' @param dir_path character filepath to a directory containing as set of .RData files to load
+#' 
+#' @param filename (optional) character filename. If no specific file is provided, the function 
+#' loads all .RData files in the provided directory path.
+#' 
 #' @importFrom tools file_ext
 #' @importFrom magrittr %>%
+
 load_RData_files <- function(dir_path, filename = NULL) {
     
     if(is.null(filename)) {
@@ -36,6 +42,11 @@ load_RData_files <- function(dir_path, filename = NULL) {
 #' Extracts and processes data, returning both a full data set with appended values and a modeling specific data set 
 #' based on the variables and recipes in the provided data map
 #' 
+#' @param df data.frame with the raw data set values.
+#' 
+#' @param map_filepath character filepath name to a yaml file that contains original variable names and 
+#' re-coding value maps.
+#' 
 #' @importFrom yaml read_yaml
 
 create_study_datasets <- function(df, map_filepath) {
@@ -57,7 +68,7 @@ create_study_datasets <- function(df, map_filepath) {
     
     # Identify variables that need recoding
     recode_names <- study_cols[recode_cols_mask]
-    
+
     output_list <- helper_recode_func(df, data_map, recode_names, study_names)
     return(output_list)
 }
@@ -70,7 +81,7 @@ create_study_datasets <- function(df, map_filepath) {
 #' @param data_map list read in from yaml file containing data renames and recoding recipes
 #' 
 #' @param recode_names a character vector of names derived from the data_map in pre-processing steps that take place in 
-#' the parent function. These are the fields that need to be recoded in some fashion. 
+#' the parent function. These are the fields that need to be re-coded in some fashion. 
 #' 
 #' @param study_names a character vector of names derived from the data_map in pre-processing steps that take place in
 #' the parent function. These are all of the fields that should be returned - whether they are recoded and renamed or 
@@ -80,10 +91,11 @@ create_study_datasets <- function(df, map_filepath) {
 
 helper_recode_func <- function(df, data_map, recode_names, study_names) {
     # Apply the recodes as appropriate from the data map
-
+    # browser()
     df <- df %>% 
         imap_dfc(~ if (hasName(data_map, .y) && hasName(data_map[[.y]], "responses"))
-            recode(.x, !!! data_map[[.y]][["responses"]])) %>% 
+            recode(.x, !!! data_map[[.y]][["responses"]], .default = NA_character_)
+            ) %>% 
         setNames(map_chr(data_map, "study_name")[names(.)]) %>% 
         bind_cols(df, .)
     
@@ -102,7 +114,7 @@ helper_recode_func <- function(df, data_map, recode_names, study_names) {
 
 #' Strips attributes read in from read_spss function. Adapted from sjlabelled package
 #' 
-#' @param df a \code{data.frame} - usually imported from SPSS using the haven package
+#' @param df a data.frame - usually imported from SPSS using the haven package.
 
 strip_df_attributes <- function(df) {
 
@@ -143,8 +155,19 @@ load_and_prep_ACHA_file <- function(file_path) {
 }
 
 
-#' Prints latex tables for comparing recoded variables
+#' Prints latex tables for comparing recoded variables. 
 #' 
+#' This function is used in the .Rmd QA files to verify the correctness of transforms.
+#' 
+#' @param df data.frame that contains the two variables to construct the cross tabulations from.
+#' 
+#' @param row_var character label for the variable to place on the rows of the table.
+#' 
+#' @param col_var character label for the variable to place on the columns of the table.
+#' 
+#' @param col_sep character value that specifies column separation width. Passed to stargazer API.
+#' 
+#' @param font_size character value that specifies font size. Passed to the stargazer API. 
 
 create_latex_crosstabs <- function(df, row_var, col_var, col_sep = "1pt", font_size = "footnotesize") {
     table(df[[row_var]], df[[col_var]]) %>% 
@@ -161,6 +184,23 @@ create_latex_crosstabs <- function(df, row_var, col_var, col_sep = "1pt", font_s
 
 #' Runs a principal components analysis with parallel analysis for detection of latent factors
 #' 
+#' @param df data.frame that contains only the numeric variables that will be used in a factor analysis
+#' 
+#' @param tbl_cap_base character text that is inserted at the start of the table caption to allow for
+#' some customization.
+#' 
+#' @param n_sims integer representing the number of simulated uncorrelated data sets to generate. 
+#' Passed to the nFactors API.
+#' 
+#' @param perc numeric value that is similar to an alpha threshold in null hypothesis testing. Used 
+#' to identify thresholds for the parallel analysis when selecting factors. Passed to the nFactors API.
+#' 
+#' @param rotation character value with a valid rotation label that can be passed to the nFactors API.
+#' 
+#' @param suppress numeric value below which values are suppressed when the table is displayed. Passed
+#' to the stargazer API.
+#' 
+#' @param col_palette vector of valid colors that can be passed to ggplot API.
 
 pca_w_horns_pa <- function(df, tbl_cap_base, n_sims = 1000, perc = .05, rotation = "oblimin", suppress = .3, 
                            col_palette = c("#42bd92", "#426EBD")) {
@@ -217,6 +257,18 @@ pca_w_horns_pa <- function(df, tbl_cap_base, n_sims = 1000, perc = .05, rotation
 
 #' One factor error covariance model generation helper
 #' 
+#' This function loops through a model and attempts to fit error covariances, using the
+#' p_thresh value as a guide to determine whether to keep an added covariance. 
+#' 
+#' @param base_model character model specified in lavaan syntax.
+#' 
+#' @param data data.frame containing all model variables
+#' 
+#' @param ordered_vars vector of variables that should be treated as ordinal when 
+#' fitting the model.
+#' 
+#' @param p_thresh probability threshold for model fit likelihood ratio tests. If the likelihood 
+#' ratio test yields a p-value less than the threshold the added path covariance path is retained.
 
 find_single_factor_final_model <- function(base_model, data, ordered_vars, p_thresh = .01) {
     message("Fitting base model")
@@ -260,6 +312,23 @@ find_single_factor_final_model <- function(base_model, data, ordered_vars, p_thr
 
 #' Two factor error covariance model generator 
 #' 
+#' This function loops through a model and attempts to fit error covariances, using the
+#' p_thresh value as a guide to determine whether to keep an added covariance. 
+#' 
+#' @param base_model character model specified in lavaan syntax.
+#' 
+#' @param data data.frame containing all model variables
+#' 
+#' @param ordered_vars vector of variables that should be treated as ordinal when 
+#' fitting the model.
+#' 
+#' @param valid_covars a list of variables to include covariances between
+#' 
+#' @param invalid_covars a list of lavaan covariance elements that should not be included in 
+#' any of the attempts to fit addtional covariances. 
+#' 
+#' @param p_thresh probability threshold for model fit likelihood ratio tests. If the likelihood 
+#' ratio test yields a p-value less than the threshold the added path covariance path is retained.
 
 find_dual_factor_final_model <- function(base_model, data, ordered_vars, valid_covars, invalid_covars, p_thresh = .01) {
     `%notin%` <- Negate(`%in%`)
@@ -311,11 +380,14 @@ find_dual_factor_final_model <- function(base_model, data, ordered_vars, valid_c
 }
 
 
-#' Calculates coefficient given a lambda matrix returned from a fitted 
+#' Calculates the H coefficient given a lambda matrix returned from a fitted 
 #' lavaan object - or any other factor loading matrix formatted in a similar 
 #' structure
 #' 
+#' The H coefficient is a measure of latent variable reliability. 
 #' 
+#' @param lambda a matrix of factor loadings that can be used to calculate 
+#' coefficient H. Assumes that the columns represent the latent factors. 
 
 coefficient_H <- function(lamdba){
     lambda <- as.matrix(lamdba)
@@ -334,6 +406,22 @@ coefficient_H <- function(lamdba){
 
 #' Generate model fit and empirical summary data. 
 #' 
+#' This is the primary summarization function used to calculate posterior 
+#' distributions for the key metrics of interest (e.g., absolute change, risk ratios, etc.)
+#' 
+#' @param original_df data.frame containing the original values used to fit the model. Used
+#' in the calculation of empirical summary stats.
+#' 
+#' @param fitted_df data.frame containing the fitted results from the model.
+#' 
+#' @param yvar character label identifying the target variable for summarization.
+#' 
+#' @param begin time index value to use as the starting point (defaults to 0 - the first time point).
+#' 
+#' @param end time inded value to use as the end point (defaults to 10.5 - the final time point).
+#' 
+#' @param time_var character label identifying the variable that represents "time". begin and end 
+#' values must correspond to this variable.
 
 create_bin_summary_table <- function(original_df, fitted_df, yvar, begin=0, end=10.5, time_var = "c_Time", 
                                      trials = NULL, weights=FALSE) {
@@ -342,16 +430,16 @@ create_bin_summary_table <- function(original_df, fitted_df, yvar, begin=0, end=
             original_df[[yvar]] <- as.numeric(original_df[[yvar]]) - 1
         }
         if('weights' %in% names(original_df)) {
-            empirical_res <- original_df %>% 
-                filter(!!sym(time_var) %in% c(begin, end)) %>% 
-                group_by(!!sym(time_var)) %>% 
+            empirical_res <- original_df %>%
+                filter(!!sym(time_var) %in% c(begin, end)) %>%
+                group_by(!!sym(time_var)) %>%
                 summarize(empirical_prop = sum(!!sym(yvar) * weights, na.rm = TRUE) / sum(weights, na.rm = TRUE))
         }
-        else if('matched_weights' %in% names(original_df)) {
+        else if('normalized_weights' %in% names(original_df)) {
             empirical_res <- original_df %>% 
                 filter(!!sym(time_var) %in% c(begin, end)) %>% 
                 group_by(!!sym(time_var)) %>% 
-                summarize(empirical_prop = sum(!!sym(yvar) * matched_weights, na.rm = TRUE) / sum(matched_weights, na.rm = TRUE) )
+                summarize(empirical_prop = sum(!!sym(yvar) * normalized_weights, na.rm = TRUE) / sum(normalized_weights, na.rm = TRUE) )
         }
         else{
             stop('ERROR could not find expected weights variable')
@@ -398,51 +486,49 @@ create_bin_summary_table <- function(original_df, fitted_df, yvar, begin=0, end=
     }
     
     # Temporary hack to enable correct estimation of CIs
-    if('perc_lb' %in% names(fitted_res)){
-        fitted_res <- fitted_res %>% 
-            select(!!sym(time_var), fitted_prop, perc_ub, perc_lb) %>% 
-            group_by(!!sym(time_var)) %>% 
-            summarize(ub_prop_95 = mean(perc_ub) / 100, 
-                      lb_prop_95 = mean(perc_lb) / 100, 
-                      fitted_prop = mean(fitted_prop))
-    }
-    else{
-        fitted_res <- fitted_res %>% 
-            select(!!sym(time_var), fitted_prop) %>% 
-            group_by(!!sym(time_var)) %>% 
-            summarize(ub_prop_95 = quantile(fitted_prop, .975), 
-                      lb_prop_95 = quantile(fitted_prop, .025), 
-                      fitted_prop = mean(fitted_prop))    
-    }
+    # if('.draw' %in% names(fitted_res)){
     fitted_res <- fitted_res %>% 
         mutate(
-            AY = c("2008-09", "2018-19"), 
-            fitted_OR = c(NA, 
-                          (fitted_prop[AY=="2018-19"] / (1 - fitted_prop[AY=="2018-19"])) /
-                              (fitted_prop[AY=="2008-09"] / (1 - fitted_prop[AY=="2008-09"]))
-            ),
-            fitted_OR_lb = c(NA, 
-                             (lb_prop_95[AY=="2018-19"] / (1 - lb_prop_95[AY=="2018-19"])) /
-                              (ub_prop_95[AY=="2008-09"] / (1 - ub_prop_95[AY=="2008-09"]))
-            ),
-            fitted_OR_ub = c(NA, 
-                             (ub_prop_95[AY=="2018-19"] / (1 - ub_prop_95[AY=="2018-19"])) /
-                                 (lb_prop_95[AY=="2008-09"] / (1 - lb_prop_95[AY=="2008-09"]))
-            ),
-            fitted_abs_diff = c(NA, 
-                                fitted_prop[AY=="2018-19"] - fitted_prop[AY=="2008-09"]),
-            fitted_abs_diff_lb = c(NA, 
-                                   lb_prop_95[AY=="2018-19"] - ub_prop_95[AY=="2008-09"]),
-            fitted_abs_diff_ub = c(NA, 
-                                   ub_prop_95[AY=="2018-19"] - lb_prop_95[AY=="2008-09"]),
-            fitted_RR = c(NA, 
-                          fitted_prop[AY=="2018-19"] / fitted_prop[AY=="2008-09"]),
-            fitted_RR_lb = c(NA, 
-                             lb_prop_95[AY=="2018-19"] / ub_prop_95[AY=="2008-09"]),
-            fitted_RR_ub = c(NA, 
-                             ub_prop_95[AY=="2018-19"] / lb_prop_95[AY=="2008-09"])
-        ) 
+            risk_ratio = rep(NA, nrow(.)),
+            odds_ratio = rep(NA, nrow(.)), 
+            abs_diff = rep(NA, nrow(.))
+        )
     
+    draws <- unique(fitted_res$.draw)
+    
+    for (draw in draws) {
+        pred_y <- fitted_res[['fitted_prop']][fitted_res[['.draw']] == draw]
+        fitted_res[['risk_ratio']][fitted_res[['.draw']] == draw] <- pred_y[2] / pred_y[1]
+        fitted_res[['odds_ratio']][fitted_res[['.draw']] == draw] <- (pred_y[2] / (1 - pred_y[2])) / (pred_y[1] / (1 - pred_y[1]))
+        fitted_res[['abs_diff']][fitted_res[['.draw']] == draw] <- pred_y[2] - pred_y[1]
+    }
+
+    fitted_res <- fitted_res %>% 
+        mutate(
+            AY = ifelse(!!sym(time_var) == begin, "2008-09", "2018-19")
+        ) %>%
+        # temporary recode of prop to disambiguate source from summary
+        select(AY, prop=fitted_prop, risk_ratio, odds_ratio, abs_diff) %>% 
+        group_by(AY) %>% 
+        summarize(
+            # Fitted prop stats
+            fitted_prop = mean(prop),
+            ub_prop_95 = quantile(prop, .975), 
+            lb_prop_95 = quantile(prop, .025),
+            # Fitted OR stats
+            fitted_OR = mean(odds_ratio),
+            fitted_OR_ub = quantile(odds_ratio, .975), 
+            fitted_OR_lb = quantile(odds_ratio, .025),
+            # Fitted RR Stats
+            fitted_RR = mean(risk_ratio),
+            fitted_RR_ub = quantile(risk_ratio, .975), 
+            fitted_RR_lb = quantile(risk_ratio, .025),
+            # Fitted AR Stats
+            fitted_abs_diff= mean(abs_diff),
+            fitted_abs_diff_ub = quantile(abs_diff, .975), 
+            fitted_abs_diff_lb = quantile(abs_diff, .025)
+        )
+
     final_df <- empirical_res %>%
         select(-!!sym(time_var)) %>% 
         left_join(fitted_res, by='AY') %>% 
@@ -465,5 +551,10 @@ create_bin_summary_table <- function(original_df, fitted_df, yvar, begin=0, end=
                                             "Relative Change, LB", "Relative Change, UB", 
                                             "Odds Ratio, LB", "Odds Ratio, UB")))
     
+    change_cols <- final_df %>% 
+        select(contains('Odds Ratio'), contains('Relative Change'), contains('Absolute Change')) %>% 
+        colnames()
+    
+    final_df[final_df[["Academic Year"]] == "2008-09", change_cols] <- NA
     return(final_df)
 } 

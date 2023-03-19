@@ -1,3 +1,21 @@
+# Install additional dependencies that do not have conda builds 
+# for MacOS M1 chipset. Note that this workflow may not work for 
+# all machines. In fact, using conda to try to automate enviornment
+# creation with this approach was not straightfoward and required
+# additional steps to modify compilers under the hood. 
+
+pkgs <- c('rstan', 'shinystan', 'brms', 'ggraph', 'tufte', 'nFactors', 'tidygraph', 'lavaan')
+
+for(pkg in pkgs){
+    if(!require(pkg, character.only=TRUE)){
+        install.packages(pkg, 
+                         repos="https://cloud.r-project.org", 
+                         destdir="/opt/homebrew/Caskroom/miniforge/base/envs/grad-mh/lib/R/library/",
+                         dependencies=TRUE
+                         )
+    }
+}
+
 # File containing basic configurations and settings for project
 library(glue)
 library(magrittr)
@@ -52,123 +70,166 @@ POIS_PRIOR_CONFIG <- c(
     )
 )
 
+DEFAULT_BREAKS <- seq(0, 40, by=10)
+DEFAULT_LABELS <- paste0(DEFAULT_BREAKS, '%')
+DEFAULT_YLIM <- c(0, max(DEFAULT_BREAKS) * 1.1)
+
 PERC_PLOT_CONFIG <- list(
     'Anxiety' = list(
-        y_breaks=seq(0, 50, by=10), 
-        y_labels=paste0(seq(0, 50, by=10), "%"), 
-        y_limits=c(0, 51)
+        title='... Anxiety Diagnosis or Treatment',
+        y_breaks=DEFAULT_BREAKS, 
+        y_labels=DEFAULT_LABELS, 
+        y_limits=DEFAULT_YLIM
     ),
     'Any Psychiatric Disorder' = list(
-        y_breaks=seq(0, 60, by=10), 
-        y_labels=paste0(seq(0, 60, by=10), "%"), 
-        y_limits=c(0,61)
+        title='... Any Mental Illness (excluding ADHD and SUDs)',
+        y_breaks=DEFAULT_BREAKS, 
+        y_labels=DEFAULT_LABELS, 
+        y_limits=DEFAULT_YLIM
     ),
     'Bipolar Disorder' = list(
-        y_breaks=seq(0, 5, by=1), 
-        y_labels=paste0(seq(0, 5, by=1), "%"), 
-        y_limits=c(0,5.1)
+        title='... Bipolar Disorder',
+        y_breaks=seq(0, 10, by=2.5), 
+        y_labels=paste0(seq(0, 10, by=2.5), "%"), 
+        y_limits=c(0, max(seq(0, 10, by=2.5)) * 1.1)
     ),
     'Depression' = list(
-        y_breaks=seq(0, 40, by=10), 
-        y_labels=paste0(seq(0, 40, by=10), "%"), 
-        y_limits=c(0, 41)
+        title='... Depression Diagnosis or Treatment',
+        y_breaks=DEFAULT_BREAKS, 
+        y_labels=DEFAULT_LABELS, 
+        y_limits=DEFAULT_YLIM
     ), 
     'Panic Attacks' = list(
-        y_breaks=seq(0, 25, by=5), 
-        y_labels=paste0(seq(0, 25, by=5), "%"), 
-        y_limits=c(0, 26)
+        title='... Panic Attacks',
+        y_breaks=seq(0, 45, by=15), 
+        y_labels=paste0(seq(0, 45, by=15), "%"), 
+        y_limits=c(0, max(seq(0, 45, by=15)) * 1.1)
     ), 
     'Schizophrenia' = list(
-        y_breaks=seq(0, 2.5, by=.5), 
-        y_labels=paste0(seq(0, 2.5, by=.5), "%"), 
-        y_limits=c(0, 2.6)
+        title='... Schizophrenia',
+        y_breaks=seq(0, 10, by=2.5), 
+        y_labels=paste0(seq(0, 10, by=2.5), "%"), 
+        y_limits=c(0, max(seq(0, 10, by=2.5)) * 1.1)
     ), 
     'Suicidal Thoughts' = list(
-        y_breaks=seq(0, 15, by=5), 
-        y_labels=paste0(seq(0, 15, by=5), "%"), 
-        y_limits=c(0, 16)
+        title='... seriously considered suicide',
+        y_breaks=seq(0, 15, by=3), 
+        y_labels=paste0(seq(0, 15, by=3), "%"), 
+        y_limits=c(0, max(seq(0, 15, by=3)) * 1.1)
     ), 
     'Suicide Attempt' = list(
-        y_breaks=seq(0, 5, by=1), 
-        y_labels=paste0(seq(0, 5, by=1), "%"), 
-        y_limits=c(0, 5.1)
+        title='... attempted suicide',
+        y_breaks=seq(0, 4, by=1), 
+        y_labels=paste0(seq(0, 4, by=1), "%"), 
+        y_limits=c(0, max(seq(0, 4, by=1)) * 1.1)
     ), 
     'Emotional Distress' = list(
-        y_breaks=seq(0, 75, by=25), 
-        y_labels=paste0(seq(0, 75, by=25), "%"), 
-        y_limits=c(0, 76)
+        title='... felt any emotional distress',
+        y_breaks=seq(0, 55, by=10), 
+        y_labels=paste0(seq(0, 55, by=10), '%'), 
+        y_limits=c(0, 55)
     ),
     'Overwhelmed or Exhausted' = list(
-        y_breaks=seq(0, 100, by=25), 
-        y_labels=paste0(seq(0, 100, by=25), "%"), 
-        y_limits=c(0, 101)
+        title='... felt overwhelmed or exhausted',
+        y_breaks=seq(0, 75, by=15), 
+        y_labels=paste0(seq(0, 75, by=15), "%"), 
+        y_limits=c(0, 82.5)
+    ),
+    'Overwhelmed' = list(
+        title='... felt overwhelmed by all you had to do',
+        y_breaks=seq(0, 75, by=15), 
+        y_labels=paste0(seq(0, 75, by=15), "%"), 
+        y_limits=c(0, 82.5)
+    ),
+    'Exhausted' = list(
+        title='... felt exhausted',
+        y_breaks=seq(0, 75, by=15), 
+        y_labels=paste0(seq(0, 75, by=15), "%"), 
+        y_limits=c(0, 82.5)
     ), 
     'Poor Health' = list(
-        y_breaks=seq(0, 30, by=10), 
-        y_labels=paste0(seq(0, 30, by=10), "%"), 
-        y_limits=c(0, 31)
+        title='... fair/poor health',
+        y_breaks=DEFAULT_BREAKS, 
+        y_labels=DEFAULT_LABELS, 
+        y_limits=DEFAULT_YLIM
     ), 
     'Too Depressed to Function' = list(
-        y_breaks=seq(0, 50, by=10), 
-        y_labels=paste0(seq(0, 50, by=10), "%"), 
-        y_limits=c(0, 51)
+        title='... felt so depressed that it was difficult to function',
+        y_breaks=DEFAULT_BREAKS, 
+        y_labels=DEFAULT_LABELS, 
+        y_limits=DEFAULT_YLIM
     ), 
     'Overwhelming Anxiety' = list(
-        y_breaks=seq(0, 50, by=10), 
-        y_labels=paste0(seq(0, 50, by=10), "%"), 
-        y_limits=c(0, 51)
+        title='... felt overwhelming anxiety',
+        y_breaks=DEFAULT_BREAKS, 
+        y_labels=DEFAULT_LABELS, 
+        y_limits=DEFAULT_YLIM
     ), 
     'Lonely' = list(
-        y_breaks=seq(0, 50, by=10), 
-        y_labels=paste0(seq(0, 50, by=10), "%"), 
-        y_limits=c(0, 51)
+        title='... felt very lonely',
+        y_breaks=DEFAULT_BREAKS, 
+        y_labels=DEFAULT_LABELS, 
+        y_limits=DEFAULT_YLIM
     ), 
     'Hopeless' = list(
-        y_breaks=seq(0, 50, by=10), 
-        y_labels=paste0(seq(0, 50, by=10), "%"), 
-        y_limits=c(0, 51)
+        title='... felt things were hopeless',
+        y_breaks=DEFAULT_BREAKS, 
+        y_labels=DEFAULT_LABELS, 
+        y_limits=DEFAULT_YLIM
+    ),
+    'Sad' = list(
+        title='... felt very sad',
+        y_breaks=DEFAULT_BREAKS, 
+        y_labels=DEFAULT_LABELS, 
+        y_limits=DEFAULT_YLIM
+    ),
+    'Anger' = list(
+        title='... felt overwhelming anger',
+        y_breaks=DEFAULT_BREAKS, 
+        y_labels=DEFAULT_LABELS, 
+        y_limits=DEFAULT_YLIM
     )
 )
 
 NSDUH_PLOT_CONFIG <- list(
     'Any Psychiatric Disorder' = list(
-        y_breaks=seq(0, 40, by=10), 
-        y_labels=paste0(seq(0, 40, by=10), "%"), 
-        y_limits=c(0,42)
+        y_breaks=seq(10, 40, by=10), 
+        y_labels=paste0(seq(10, 40, by=10), "%"), 
+        y_limits=c(10, 41)
     ),
     'Suicidal Thoughts' = list(
         y_breaks=seq(0, 10, by=2.5), 
         y_labels=paste0(seq(0, 10, by=2.5), "%"), 
-        y_limits=c(0, 10.5)
+        y_limits=c(0, 11)
     ), 
     'Suicide Attempt' = list(
         y_breaks=seq(0, 1, by=.25), 
         y_labels=paste0(seq(0, 1, by=.25), "%"), 
-        y_limits=c(0, 1.05)
+        y_limits=c(0, 1.1)
     ), 
     'Poor Health' = list(
-        y_breaks=seq(0, 20, by=5), 
-        y_labels=paste0(seq(0, 20, by=5), "%"), 
-        y_limits=c(0,21)
+        y_breaks=seq(0, 15, by=5), 
+        y_labels=paste0(seq(0, 15, by=5), "%"), 
+        y_limits=c(0,16)
     ), 
     'Matched Any Psychiatric Disorder' = list(
-        y_breaks=seq(0, 40, by=10), 
-        y_labels=paste0(seq(0, 40, by=10), "%"), 
-        y_limits=c(0,42)
+        y_breaks=seq(10, 40, by=10), 
+        y_labels=paste0(seq(10, 40, by=10), "%"), 
+        y_limits=c(10, 41)
     ),
     'Matched Suicidal Thoughts' = list(
         y_breaks=seq(0, 10, by=2.5), 
         y_labels=paste0(seq(0, 10, by=2.5), "%"), 
-        y_limits=c(0, 10.5)
+        y_limits=c(0, 11)
     ), 
     'Matched Suicide Attempt' = list(
         y_breaks=seq(0, 1, by=.25), 
         y_labels=paste0(seq(0, 1, by=.25), "%"), 
-        y_limits=c(0, 1.05)
+        y_limits=c(0, 1.1)
     ), 
     'Matched Poor Health' = list(
-        y_breaks=seq(0, 20, by=5), 
-        y_labels=paste0(seq(0, 20, by=5), "%"), 
-        y_limits=c(0,21)
+        y_breaks=seq(0, 15, by=5), 
+        y_labels=paste0(seq(0, 15, by=5), "%"), 
+        y_limits=c(0,16)
     )
 )

@@ -1,4 +1,3 @@
-# Base modeling script - starting off with simple analysis
 DATA_VERSION <- "2021-02-04"
 
 BASE_FILE <- '~/Desktop/grad_mh/project_config.R'
@@ -54,6 +53,6 @@ res <- logistic_model_wrapper(
     warmup = 5000, 
     iter = 7500, 
     chains = 3, 
-    control_list = list(adapt_delta = .99), 
+    control_list = list(adapt_delta = .95), 
     model_save_name = "dx_anxiety_all_covariate"
 )

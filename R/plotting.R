@@ -7,6 +7,34 @@ library(tidybayes)
 library(tidyverse)
 
 #' Creates exploratory plots for NSDUH raw and weighted outputs
+#' 
+#' The function produces a plot that contains both weighted and unweighted summary values. Intended to work 
+#' with NSDUH data.frames in the project. 
+#' 
+#' @param df data.frame with required plotting inputs
+#' 
+#' @param xvar character label for the variable to plot on the x-axis (usually time in this project).
+#' 
+#' @param yvar character label for a selected dependent variable
+#' 
+#' @param yvar_hits vector with target values on the dependent variable. For dichotomous variables in 
+#' the data this is usually just a 1. For categorical it may be several values (e.g., Poor and Fair 
+#' from a 5-point ordinal rating scale could be "hit" values). 
+#' 
+#' @param weight_var character label for the field in the data.frame df that contains the case weights.
+#' For the NSDUH data there are both U.S. adult weights and U.S. matched peers weights. 
+#' 
+#' @param mask_var character label for the field in the data.frame df that contains a mask or filter 
+#' variable. In the NSDUH data sets these would typically be an indicator for adult vs. non-adult 
+#' or matched sample vs. non-matched sample.
+#' 
+#' @param y_breaks vector with values along the y-axis to display in the plot. Passed to the ggplot
+#' API internally.
+#' 
+#' @param ylab character label for the y-axis. Passed to the ggplot API
+#' 
+#' @param xlab character label for the x-axis. Passed to the ggplot API.
+
 create_nsduh_trend_plots <- function(df, xvar, yvar, yvar_hits, weight_var, mask_var, y_breaks,
                                      ylab = 'Proportion', xlab = 'Year') {
     df_raw <- df %>% 
@@ -43,19 +71,24 @@ create_nsduh_trend_plots <- function(df, xvar, yvar, yvar_hits, weight_var, mask
 
 #' Creates correlation network graph
 #'
-#' @param df \code{data.frame} containing target variables
+#' @param df data.frame containing target variables
 #' 
 #' @param vars character vector of variables to generate correlation networks from
 #' 
 #' @param cor_method character indicating correlation type (e.g. "spearman", "pearson"). Value is passed to 
-#' \code{corrr:correlate()}
-#' 
-#' @param cor_cutoff value between 0 and 1. Applies an absolute threshold when creating the correlation network. Strong
-#' negative correlations and strong positive correlations will be part of the same network. 
+#' corrr:correlate()
 #' 
 #' @param label_map (optional) a named vector in which the names are the variable names passed in via the \code{vars} 
 #' parameter and the values are the preferred renames. Helpful from translating confusing variable names to labels that
 #' contain a more obvious meaning. 
+#' 
+#' @param label_map named vector mapping readable labels to variable names in the data.frame.
+#' 
+#' @param color_map vector of color values to use when separating "sub" networks.
+#' 
+#' @param cor_cutoff value between 0 and 1. Applies an absolute threshold when creating the correlation network. Strong
+#' negative correlations and strong positive correlations will be part of the same network. 
+#' 
 
 create_cor_network_plot <- function(df, vars, cor_method, label_map, color_map, cor_cutoff) {
     if(is.null(cor_cutoff)) cor_cutoff <- 0
@@ -224,6 +257,8 @@ create_plot_df <- function(df, n_samples) {
 #' 
 #' @param y_labels labels displayed on the y-axis
 #' 
+#' @param y_limits upper and lower bounds for the y-axis
+#' 
 #' @param x_breaks values at which to create breaks on the x-axis
 #' 
 #' @param x_labels labels displayed on the x-axis
@@ -242,34 +277,23 @@ create_percent_summary_plot <- function(fitted_df, group_df, title, y_breaks, y_
     clr_palette <- RColorBrewer::brewer.pal(9, color_pal)
     fitted_df %>% 
         ggplot(aes(x = c_Time, y = perc)) +
-        stat_lineribbon(.width = .95, 
-                        aes(fill = "95% Credibility Interval", 
-                            color = "MLM Fit"), 
-                        alpha = .75, point_interval = mean_qi) + 
-        scale_color_manual("MLM Model Posterior", aesthetics = c("color", "fill"),
-                           breaks = c("MLM Fit", "95% Credibility Interval"), 
-                           values = c("95% Credibility Interval" = clr_palette[4], 
-                                      "MLM Fit" = clr_palette[9])) +
+        geom_jitter(data=group_df, aes(x = !!sym(xvar), y = perc, size = count), 
+                    width = .125, shape = 21, color = clr_palette[9],
+                    fill = clr_palette[2], inherit.aes = FALSE) +
+        stat_summary(aes(y=perc, group=1, color="Model Average\nPosterior Predictions"), geom='line', 
+                     group=1, fun=mean, lwd=2) +
+        scale_color_manual("", values=c("Model Average\nPosterior Predictions" = clr_palette[9])) +
         scale_x_continuous(breaks = x_breaks, labels = x_labels) +
         scale_y_continuous(breaks = y_breaks, labels = y_labels) +
         coord_cartesian(ylim = y_limits) +
-        geom_jitter(data=group_df, aes(x = !!sym(xvar), y = perc, size = count), 
-                    alpha = .1875, width = .075, color = clr_palette[8], 
-                    fill = clr_palette[2]) +
         theme_bw() +
         labs(x = "Year", 
              y = "Percentage", 
              size = "Respondents per Institution", 
-             color = "Posterior Predictions", 
              title = title, 
              subtitle = subtitle, 
              caption = caption) + 
         scale_size(breaks = c(500, 1000, 2000, 4000), labels = c("500", "1,000", "2,000", "4,000")) +
-        guides(color = guide_legend(order = 1,
-                                    override.aes = list(lwd = c(1, 5), 
-                                                        fill = NA)),
-               size = guide_legend(order = 2),
-               fill = 'none') +
         theme(legend.title = element_text(size = 14), 
               legend.text = element_text(size = 12))
 }

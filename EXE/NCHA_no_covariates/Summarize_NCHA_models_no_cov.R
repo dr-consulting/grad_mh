@@ -18,6 +18,8 @@ source(BASE_FILE)
 
 sapply(list.files(R_DIR, full.names = TRUE), source)
 
+VERSION <- Sys.Date()
+
 yvars <- list('Anxiety' = c(var_name='Q31A_anxiety_dich', data_prefix='dx_anxiety_no_cov'),
               'Any Psychiatric Disorder' = c(var_name='any_dx_nsduh', data_prefix='dx_nsduh_any_no_cov'),
               'Bipolar Disorder' = c(var_name='Q31A_bipolar_dich', data_prefix='dx_bipolar_no_cov'),
@@ -70,7 +72,7 @@ for(yvar in names(yvars)){
             rownames(fixef_tbl)[row] <- names(covariates)[which(covariates == rownames(fixef_tbl)[row])]
         }
         fixef_tbl %>% 
-            write.csv("{SUMMARY_OUTPUT}/ACHA-NCHA_{yvar}_no_cov_coefficients_table.csv" %>% glue(), row.names = TRUE)
+            write.csv("{SUMMARY_OUTPUT}/ACHA-NCHA_{yvar}_no_cov_coefficients_table_{VERSION}.csv" %>% glue(), row.names = TRUE)
         
         # Create group df - only for schools with at least 30 respondents 
         grp_df <- data %>% 
@@ -128,9 +130,11 @@ for(yvar in names(yvars)){
                     design_matrix[['time_sq']] * post_df[['b2']][r]
                 
                 tmp_df <- data.frame(
+                    '.draw' = r,
                     c_Time = design_matrix[['time']], 
                     perc = logits_to_prob(pred_y) * 100
                 )
+                
                 plot_df <- rbind(plot_df, tmp_df)
             }
         }
@@ -138,19 +142,32 @@ for(yvar in names(yvars)){
         plotlist[[yvar]] <- create_percent_summary_plot(
             plot_df, 
             grp_df, 
-            title = yvar,
+            title = PERC_PLOT_CONFIG[[yvar]][['title']],
             x_breaks = seq(0.5, 10.5, by = 2),
             x_labels = seq(2009, 2019, by = 2),
             y_breaks = PERC_PLOT_CONFIG[[yvar]][['y_breaks']],
             y_labels = PERC_PLOT_CONFIG[[yvar]][['y_labels']],
             y_limits = PERC_PLOT_CONFIG[[yvar]][['y_limits']],
-            color_pal = "Blues", 
+            color_pal = "Blues",
+            caption = "For convenience, plot excludes schools with fewer than 30 respondents."
+        )
+        
+        max_y <- max(PERC_PLOT_CONFIG[[yvar]][['y_breaks']])
+        
+        ggsave(
+            plotlist[[yvar]],
+            filename = "{PLOT_OUTPUT}/ACHA-NCHA_{yvar}_no_cov_summary_plot_{max_y}.png" %>% glue(), 
+            device = "png", 
+            units = "in", 
+            height = 5,
+            width = 9,
+            dpi = 600
         )
         
         ggsave(
             plotlist[[yvar]],
-            filename = "{PLOT_OUTPUT}/ACHA-NCHA_{yvar}_no_cov_summary_plot_new.png" %>% glue(), 
-            device = "png", 
+            filename = "{PLOT_OUTPUT}/ACHA-NCHA_{yvar}_no_cov_summary_plot_{max_y}.eps" %>% glue(), 
+            device = "eps", 
             units = "in", 
             height = 5,
             width = 9,
@@ -159,7 +176,7 @@ for(yvar in names(yvars)){
         
         # Create summary table of observed and fitted effects
         create_bin_summary_table(data, plot_df, yvar = var_name) %>% 
-            write.csv("{SUMMARY_OUTPUT}/ACHA-NCHA_{yvar}_no_cov_summary_stats.csv" %>% glue(), row.names = FALSE)
+            write.csv("{SUMMARY_OUTPUT}/ACHA-NCHA_{yvar}_no_cov_summary_stats_{VERSION}.csv" %>% glue(), row.names = FALSE)
         
         summary_plot <- plotlist[[yvar]]
         

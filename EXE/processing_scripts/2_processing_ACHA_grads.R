@@ -1,14 +1,17 @@
+# Filters and processes the grad student data from ACHA-NCHA
+
 # Be sure to update the data version to the appropriate date before running
-DATA_VERSION <- "2021-02-04"
+DATA_VERSION <- "2023-01-15"
 
 library(glue)
 library(tidyverse)
 library(haven)
-source('~/github/ATNL/grad_mh/project_config.R')
+source('~/Desktop/grad_mh/project_config.R')
 sapply(list.files(R_DIR, full.names = TRUE), source)
 load('{DATA_DIR}/ACHA-II/acha_study_data_{DATA_VERSION}.RData' %>% glue())
 
 grads_model_base <- grads_only_study_df %>% 
+    filter(us_region != "Outside U.S.") %>% 
     # filter initially to get a proper count of total grad students
     filter(Q52_enrollment == "Full-time" | Q52_enrollment == "Part-time") %>% 
     filter(school_type == "4-year") %>%
@@ -31,13 +34,13 @@ grads_model_base <- grads_only_study_df %>%
                                               . == 'Yes, in the last 30 days' |
                                               . == 'Yes, in the last 12 months', 1, 0)), 
                .names = "{col}_12mos")
-    ) %>% 
-    filter(us_region != "Outside U.S.")
+    ) 
     
-# Add quadratic time slp 
+# Add quadratic time slope 
 grads_model_base[["quad_c_Time"]] <- grads_model_base[["c_Time"]]^2
 
 # Add a centered value for age
+# CSV and SAV files produced for colleagues to explore data on their own
 grads_model_base[["c_Q46_age"]] <- grads_model_base[["Q46_age"]] - mean(grads_model_base[["Q46_age"]], na.rm = TRUE)
 
 write.csv(grads_model_base,

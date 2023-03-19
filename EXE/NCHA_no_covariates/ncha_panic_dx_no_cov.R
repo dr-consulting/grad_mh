@@ -6,12 +6,13 @@ BASE_FILE <- '~/Desktop/grad_mh/project_config.R'
 # If missing the config file raise early.
 # Likely just opened the repo in a different file system
 if(!file.exists(BASE_FILE)){
-  stop('ERROR: Missing project config file. {BASE_FILE}' %>% glue())
+    stop('ERROR: Missing project config file. {BASE_FILE}' %>% glue())
 }
 
 source(BASE_FILE)
 
 sapply(list.files(R_DIR, full.names = TRUE), source)
+
 load("{DATA_DIR}/ACHA-II/acha_grad_students_base_{DATA_VERSION}.RData" %>% glue::glue())
 
 id_var <- "school_id"

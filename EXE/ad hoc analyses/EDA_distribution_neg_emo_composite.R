@@ -1,4 +1,6 @@
-# Exploration of continuous measure distribution 
+# Exploration of continuous measure approach to negative emotion
+# here we explored using a single count variable for the negative emotion
+# items
 library(tidyverse)
 library(brms)
 library(glue)

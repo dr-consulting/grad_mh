@@ -1,6 +1,6 @@
 ---
 title: "Supplement: Factor Analysis and Psychometrics of Subjective Distress among U.S. Graduate Students"
-runningheader: "DeYoung et al. 2020" # only for pdf output
+runningheader: "DeYoung et al. 2023" # only for pdf output
 author: "Matthew Barstead, Ph.D."
 date: "`r Sys.Date()`"
 output:
@@ -21,6 +21,7 @@ nocite: '@*'
 editor_options:
   chunk_output_type: console
 urlcolor: blue
+always_allow_html: true
 ---
 
 ```{r setup, include=FALSE}
@@ -33,11 +34,18 @@ library(tidygraph)
 library(tufte)
 library(lavaan)
 
-# Don't forget the DATA_VERSION update if needed
-DATA_VERSION <- "2021-01-15"
+BASE_FILE <- '~/Desktop/grad_mh/project_config.R'
+DATA_VERSION <- '2021-02-04'
 
-source('~/github/ATNL/grad_mh/project_config.R')
+# If missing the config file raise early.
+# Likely just opened the repo in a different file system
+if(!file.exists(BASE_FILE)){
+    stop('ERROR: Missing project config file. {BASE_FILE}' %>% glue())
+}
+
+source(BASE_FILE)
 sapply(list.files(R_DIR, full.names = TRUE), source)
+
 load('{DATA_DIR}/ACHA-II/acha_grad_students_base_{DATA_VERSION}.RData' %>% glue())
 
 set.seed(19151125)

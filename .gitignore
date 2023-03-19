@@ -18,3 +18,5 @@
 *.Rhistory
 *.DS_Store
 *.zip
+*.eps
+*.idea/

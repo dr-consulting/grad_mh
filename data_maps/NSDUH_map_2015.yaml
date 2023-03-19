@@ -87,23 +87,23 @@ AGE2:
     study_name: age_categories
     text: Respondent Age
     responses: 
-        1: 12
-        2: 13 
-        3: 14
-        4: 15
-        5: 16
-        6: 17
-        7: 18
-        8: 19
-        9: 20
-        10: 21
-        11: 22, 23
-        12: 24, 25
-        13: 26, 29
-        14: 30, 34
-        15: 35, 49
-        16: 50, 64
-        17: 65, Inf
+        1: '12'
+        2: '13' 
+        3: '14'
+        4: '15'
+        5: '16'
+        6: '17'
+        7: '18'
+        8: '19'
+        9: '20'
+        10: '21'
+        11: '22, 23'
+        12: '24, 25'
+        13: '26, 29'
+        14: '30, 34'
+        15: '35, 49'
+        16: '50, 64'
+        17: '65, Inf'
 
 health:
     study_name: global_health
@@ -122,7 +122,7 @@ irsex:
         1: Male
         2: Female
 
-IREDUC2:
+IREDUHIGHST2:
     study_name: educ_level
     text: Education
     responses: 
@@ -150,20 +150,43 @@ NEWRACE2:
         6: NonHisp more than one race
         7: Hispanic
 
-EDUCCAT2: 
-    study_name: educ_level_cat
-    text: Education categories
-    responses: 
-        1: Less than high school
-        2: High school graduate
-        3: Some college
-        4: College graduate
-        5: 12 to 17 years old
-
 ANALWT_C: 
     study_name: weights
     text: Case-level study weight based on Census estimates
     
 quarter:
-    study_name: quarter
+    study_name: qtr
     text: Quarter Indicator
+
+eduenroll:
+    study_name: schenrl_cat
+    text: School enrollment indicator
+    responses:
+        1: "Yes"
+        2: "No"
+        3: "Yes LOGICALLY ASSIGNED (LFSCHWH2=778)"
+        4: "No LOGICALLY ASSIGNED"
+        5: "Yes LOGICALLY ASSIGNED (LFSCHWH2=601)"
+        11: "Yes (SCHDSKIP = 30)"
+        85: "BAD DATA LOGICALLY ASSIGNED"
+        94: "DON'T KNOW"
+        97: "REFUSED"
+        98: "BLANK (NO ANSWER)"
+
+EDUGRDNOW2:
+    study_name: schenrl_level
+    text: If enrolled in school, the level / grade enrolled in 
+    responses:
+        1: "5th Grade or lower"
+        2: "6th Grade"
+        3: "7th Grade" 
+        4: "8th Grade"
+        5: "9th Grade"
+        6: "10th Grade"
+        7: "11th Grade"
+        8: "12th Grade"
+        9: "College or university/1st year"
+        10: "College or university/2nd Year, 3rd year"
+        11: "College or university/4th Year, 5th or higher year"
+        98: "BLANK (NO ANSWER)"
+        99: "LEGITIMATE SKIP"

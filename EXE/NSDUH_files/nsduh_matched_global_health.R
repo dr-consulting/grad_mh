@@ -5,7 +5,7 @@ library(tidyverse)
 library(glue)
 
 BASE_FILE <- '~/Desktop/grad_mh/project_config.R'
-
+DATA_VERSION <- '2023-01-15'
 # If missing the config file raise early.
 # Likely just opened the repo in a different file system
 if(!file.exists(BASE_FILE)){
@@ -14,6 +14,9 @@ if(!file.exists(BASE_FILE)){
 
 source(BASE_FILE)
 sapply(list.files(R_DIR, full.names = TRUE), source)
+
+# Loading first so I can kick out the unneeded data sets from each year
+load('{DATA_DIR}/NSDUH/nsduh_matched_study_data_{DATA_VERSION}.RData' %>% glue())
 
 # Note may require specific transforms in the tidy data creation step below. 
 y_var <- "global_health_dich"
@@ -31,7 +34,7 @@ nsduh_matched_df <- nsduh_matched_df %>%
         )
     )
 
-brms_form <- '{y_var} | weights(matched_weights) ~ c_Time + quad_c_Time' %>% 
+brms_form <- '{y_var} | weights(normalized_weights) ~ c_Time + quad_c_Time' %>% 
     glue() %>% 
     brmsformula() + bernoulli()
 
@@ -44,8 +47,8 @@ brms_fit <- brm(
     brms_form, 
     data = nsduh_matched_df, 
     prior = priors_config,
-    iter = 4000, 
-    warmup = 2500, 
+    iter = 7500, 
+    warmup = 5000, 
     control = list(adapt_delta = .99), 
     cores = 3, 
     chains = 3

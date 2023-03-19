@@ -11,6 +11,7 @@ if(!file.exists(BASE_FILE)){
 source(BASE_FILE)
 
 sapply(list.files(R_DIR, full.names = TRUE), source)
+
 load("{DATA_DIR}/ACHA-II/acha_grad_students_base_{DATA_VERSION}.RData" %>% glue::glue())
 
 id_var <- "school_id"

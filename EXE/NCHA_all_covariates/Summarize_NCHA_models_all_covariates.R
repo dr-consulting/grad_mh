@@ -17,6 +17,8 @@ source(BASE_FILE)
 
 sapply(list.files(R_DIR, full.names = TRUE), source)
 
+VERSION <- Sys.Date()
+
 yvars <- list('Anxiety' = c(var_name='Q31A_anxiety_dich', data_prefix='dx_anxiety_all_covariate'),
               'Any Psychiatric Disorder' = c(var_name='any_dx_nsduh', data_prefix='dx_nsduh_any_all_covariate'),
               'Bipolar Disorder' = c(var_name='Q31A_bipolar_dich', data_prefix='dx_bipolar_all_covariate'),
@@ -36,7 +38,7 @@ yvars <- list('Anxiety' = c(var_name='Q31A_anxiety_dich', data_prefix='dx_anxiet
               'Overwhelming Anxiety' = c(var_name="Q30G_anxiety_r_2wks", data_prefix='anxious_all_covariate'), 
               'Lonely' = c(var_name="Q30D_lonely_r_2wks", data_prefix='lonely_all_covariate'), 
               'Hopeless' = c(var_name="Q30A_hopeless_r_2wks", data_prefix='hopeless_all_covariate')
-              )
+)
 
 time_vars <- c('c_Time', 'quad_c_Time')
 covariates <- c('Intercept'='Intercept', 'Time'='c_Time', 'Time^2'='quad_c_Time',
@@ -57,7 +59,7 @@ covariates <- c('Intercept'='Intercept', 'Time'='c_Time', 'Time^2'='quad_c_Time'
                 'Size: 10,000-19,999 v. <2,500'='school_size10000M19999students',
                 'Size: >20,000 v. <2,500'='school_size20000studentsormore',
                 'Public School'='public_schl'
-                )
+)
 
 xvar <- 'c_Time'
 
@@ -87,7 +89,7 @@ for(yvar in names(yvars)){
             rownames(fixef_tbl)[row] <- names(covariates)[which(covariates == rownames(fixef_tbl)[row])]
         }
         fixef_tbl %>% 
-            write.csv("{SUMMARY_OUTPUT}/ACHA-NCHA_{yvar}_coefficients_table_all_cov.csv" %>% glue(), row.names = TRUE)
+            write.csv("{SUMMARY_OUTPUT}/ACHA-NCHA_{yvar}_coefficients_table_all_cov_{VERSION}.csv" %>% glue(), row.names = TRUE)
         
         # Create group df - only for schools with at least 30 respondents 
         grp_df <- data %>% 
@@ -175,9 +177,11 @@ for(yvar in names(yvars)){
                     design_matrix[['time_sq']] * post_df[['b2']][r]
                 
                 tmp_df <- data.frame(
+                    '.draw' = r,
                     c_Time = design_matrix[['time']], 
                     perc = logits_to_prob(pred_y) * 100
                 )
+                
                 plot_df <- rbind(plot_df, tmp_df)
             }
         }
@@ -194,9 +198,11 @@ for(yvar in names(yvars)){
             color_pal = "Blues", 
         )
         
+        max_y <- max(PERC_PLOT_CONFIG[[yvar]][['y_breaks']])
+        
         ggsave(
             plotlist[[yvar]],
-            filename = "{PLOT_OUTPUT}/ACHA-NCHA_{yvar}_summary_plot_all_cov.png" %>% glue(), 
+            filename = "{PLOT_OUTPUT}/ACHA-NCHA_{yvar}_summary_plot_all_cov_{max_y}.png" %>% glue(), 
             device = "png", 
             units = "in", 
             height = 5,
@@ -206,7 +212,7 @@ for(yvar in names(yvars)){
         
         # Create summary table of observed and fitted effects
         create_bin_summary_table(data, plot_df, yvar = var_name) %>% 
-            write.csv("{SUMMARY_OUTPUT}/ACHA-NCHA_{yvar}_summary_stats_all_cov.csv" %>% glue(), row.names = FALSE)
+            write.csv("{SUMMARY_OUTPUT}/ACHA-NCHA_{yvar}_summary_stats_all_cov_{VERSION}.csv" %>% glue(), row.names = FALSE)
         
         summary_plot <- plotlist[[yvar]]
         

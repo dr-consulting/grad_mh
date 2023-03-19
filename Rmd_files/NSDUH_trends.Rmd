@@ -17,12 +17,22 @@ output:
       in_header: preamble.tex
 bibliography: NSDUH_trends.bib
 nocite: '@*'
+always_allow_html: true
 ---
 
 ```{r setup, include=FALSE}
-source('~/github/ATNL/grad_mh/project_config.R')
+BASE_FILE <- '~/Desktop/grad_mh/project_config.R'
+DATA_VERSION <- '2023-01-15'
+
+# If missing the config file raise early.
+# Likely just opened the repo in a different file system
+if(!file.exists(BASE_FILE)){
+    stop('ERROR: Missing project config file. {BASE_FILE}' %>% glue())
+}
+
+source(BASE_FILE)
 sapply(list.files(R_DIR, full.names = TRUE), source)
-load('{DATA_DIR}/NSDUH/nsduh_study_data.RData' %>% glue())
+load('{DATA_DIR}/NSDUH/nsduh_study_data_{DATA_VERSION}.RData' %>% glue())
 ```
 
 # Overview

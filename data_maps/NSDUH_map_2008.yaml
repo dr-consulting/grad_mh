@@ -157,3 +157,34 @@ ANALWT_C:
 quarter:
     study_name: qtr
     text: Quarter Indicator
+
+schenrl:
+    study_name: schenrl_cat
+    text: School enrollment indicator
+    responses:
+        1: "Yes"
+        2: "No"
+        3: "Yes LOGICALLY ASSIGNED (LFSCHWH2=778)"
+        4: "No LOGICALLY ASSIGNED"
+        5: "Yes LOGICALLY ASSIGNED (LFSCHWH2=601)"
+        11: "Yes (SCHDSKIP = 30)"
+        94: "DON'T KNOW"
+        98: "BLANK (NO ANSWER)"
+
+EDUCATN2:
+    study_name: schenrl_level
+    text: If enrolled in school, the level / grade enrolled in 
+    responses:
+        1: "5th Grade or lower"
+        2: "6th Grade"
+        3: "7th Grade" 
+        4: "8th Grade"
+        5: "9th Grade"
+        6: "10th Grade"
+        7: "11th Grade"
+        8: "12th Grade"
+        9: "College or university/1st year"
+        10: "College or university/2nd Year, 3rd year"
+        11: "College or university/4th Year, 5th or higher year"
+        98: "BLANK (NO ANSWER)"
+        99: "LEGITIMATE SKIP" 

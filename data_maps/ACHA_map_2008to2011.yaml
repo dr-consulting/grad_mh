@@ -368,8 +368,8 @@ PUBPRIV:
     study_name: public_schl
     text: Institutional control
     responses: 
-        1: 1
-        2: 0
+        1: "1"
+        2: "0"
 
 STUDY: 
     study_name: survey_period

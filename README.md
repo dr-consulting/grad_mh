@@ -1,8 +1,9 @@
-# NSDUH Notes
-- NSDUH data were retrieved from: https://www.datafiles.samhsa.gov/info/browse-studies-nid3454
-- In 2015, the education level variable changed slightly. The 2008 to 2014 surveys included the `IREDUC2` and `EDUCCAT2` variables. From 2015 through 2019 the education variable changed to `IREDUHIGHST2`. In addition to the name change, missing education levels were imputed in these later surveys. Both `IREDUC2` and `IREDUHIGHST2` use a similar 1-11 scale to record valid reponses. They are not equivalent however. Response option 11, which is used to identify a subpopulation of comparably educated U.S. adults is worded differently: 
-    - 2008-2014 version: "Senior/16th year or Grad/Prof School (or higher)"
-    - 2015-2019 version: "College graduate or higher"
-- The primary "past-year" depression variable from the NSDUH was `AMDEYR` - which measured the occurrence of a major depressive episode in the past year. Directly from the 2015 codebook (p. 419): 
+# Graduate student mental health
 
->The following variable, AMDELT, identifies an adult as having a major depressive episode (MDE) in their lifetime and AMDEYR identifies an adult as having MDE in the prior year. Due to questionnaire changes in 2008, these MDE variables are notdirectly comparable to MDE variables from 2004 to 2008. Adjusted lifetime and past year MDE variables (AJAMDELT and AJAMDEYR) were developed to allow comparisons of adult MDE data across years beginning with 2005 and continuing through 2008 and later years
+This repository contains the code supporting DeYoung et al.'s manuscript comparing trends in U.S. graduate student mental health levels with those of the general U.S. adult population and a sample of education-matched adults. 
+
+Some of the data used in these analyses are publicly available. Specifically, the comparison samples were created from the ongoing National Survey on Drug Use and Health available from the U.S. government's [Substance Abuse & Mental Health Data Archive](https://www.datafiles.samhsa.gov/data-sources) (SAMHDA).  
+
+Some of the data are not publicly available and need to be requested from the data producers. Specifically our sample of graduate students was created from the [National College Health Assessment](https://www.acha.org/NCHA/About_ACHA_NCHA/Survey/NCHA/About/Survey.aspx?hkey=7e9f6752-2b47-4671-8ce7-ba7a529c9934) - conducted twice a year by the American College Health Association.
+
+## Setup 

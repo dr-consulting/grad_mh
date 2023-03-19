@@ -44,7 +44,7 @@ testthat::expect_true(
 res <- logistic_model_wrapper(
     data = grads_model_base, 
     prior_config = PRIOR_CONFIG,
-    y_var = y_var, 
+    y_var = y_var,
     id_var = id_var, 
     lv1_vars = lv1_vars, 
     lv1_ran_vars = 'c_Time', 

@@ -20,3 +20,4 @@
 *.zip
 *.eps
 *.idea/
+.Rproj.user

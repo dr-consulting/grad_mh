@@ -1,12 +1,12 @@
 # Base modeling script - starting off with simple analysis
-DATA_VERSION <- "2021-02-04"
+DATA_VERSION <- "2023-04-15"
 
-BASE_FILE <- '~/Desktop/grad_mh/project_config.R'
+BASE_FILE <- '~/grad_mh/project_config.R'
 
 # If missing the config file raise early.
 # Likely just opened the repo in a different file system
 if(!file.exists(BASE_FILE)){
-    stop('ERROR: Missing project config file. {BASE_FILE}' %>% glue())
+    stop(paste('ERROR: Missing project config file.', BASE_FILE))
 }
 
 source(BASE_FILE)
@@ -54,5 +54,6 @@ res <- logistic_model_wrapper(
     iter = 7500, 
     chains = 3, 
     control_list = list(adapt_delta = .95), 
-    model_save_name = "dx_suic_thnk_no_cov"
+    model_save_name = "dx_suic_thnk_no_cov",
+    chain_hyperthreading = TRUE
 )

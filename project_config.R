@@ -1,26 +1,28 @@
-# Install additional dependencies that do not have conda builds 
-# for MacOS M1 chipset. Note that this workflow may not work for 
-# all machines. In fact, using conda to try to automate enviornment
-# creation with this approach was not straightfoward and required
-# additional steps to modify compilers under the hood. 
-
-pkgs <- c('rstan', 'shinystan', 'brms', 'ggraph', 'tufte', 'nFactors', 'tidygraph', 'lavaan')
+pkgs <- c('rstan', 'shinystan', 'brms', 'ggraph', 'tufte', 'nFactors', 'tidygraph', 'lavaan', 
+          'forcats', 'haven', 'sjlabelled', 'tidyverse', 'corrr', 'tidybayes')
 
 for(pkg in pkgs){
     if(!require(pkg, character.only=TRUE)){
         install.packages(pkg, 
-                         repos="https://cloud.r-project.org", 
-                         destdir="/opt/homebrew/Caskroom/miniforge/base/envs/grad-mh/lib/R/library/",
+                         repos="https://cloud.r-project.org",
                          dependencies=TRUE
                          )
     }
+}
+
+# To leverage parallelization during fitting - allows additional orchestration
+# of computations to boost speed. 
+if(!require(cmdstanr)){
+    install.packages("cmdstanr", repos = c("https://mc-stan.org/r-packages/", getOption("repos")))
+    # Installation step will set the path for the cmdstan backend.
+    cmdstanr::install_cmdstan()
 }
 
 # File containing basic configurations and settings for project
 library(glue)
 library(magrittr)
 
-LOCAL_REPO <- '~/Desktop/grad_mh'
+LOCAL_REPO <- '~/grad_mh'
 DATA_DIR <- paste0(LOCAL_REPO, '/', 'data')
 R_DIR <- paste0(LOCAL_REPO, '/', 'R')
 MAPS_DIR <- paste0(LOCAL_REPO, '/', 'data_maps')

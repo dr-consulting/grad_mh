@@ -36,10 +36,19 @@ library(tidyverse)
 #' MCMC computations. Default is set to FALSE.
 #' 
 #' @param model_save_name character filename to save the compiled Stan model produced when fitting a model with brms.
+#' 
+#' @param chain_hyper_threading boolean, optional. Default is FALSE which parallelizes computations for each chain
+#' on a single core. If TRUE, the computations for each chain will be threaded - adding additional parallelization and speeding
+#' compute times. TRUE is only recommended for multicore machines (recommend at least 12 cores). See this url for 
+#' additional information: https://cran.r-project.org/web/packages/brms/vignettes/brms_threading.html.
+#' 
+#' @param max_threads integer, optional. The number of threads to use for each chain when chain_hyperthreading is TRUE.
+#' Default value is 6 - adjust to what makes sense for your machine (running 3 chains, with a max number of 4 threads per
+#' chain requires 12 cores.)
 
 logistic_model_wrapper <- function(data, prior_config, y_var, id_var, lv1_vars, lv1_ran_vars, lv2_int_vars,
                                    output_folder, warmup, iter, chains, control_list, future_arg = FALSE, 
-                                   model_save_name=NULL){
+                                   model_save_name=NULL, chain_hyperthreading=FALSE, max_threads=6){
     start_time <- Sys.time()
     results_list <- list()
     results_list[["model_data"]] <- data
@@ -58,17 +67,34 @@ logistic_model_wrapper <- function(data, prior_config, y_var, id_var, lv1_vars, 
     results_list[["brms_formula"]] <- model
     results_list[["brms_priors"]] <- brms::get_prior(model, data)
     
-    fit <- brms::brm(
-        model, 
-        data = data, 
-        iter = iter, 
-        warmup = warmup,
-        chains = chains, 
-        cores = chains, 
-        control = control_list,
-        future = future_arg, 
-        save_model = ifelse(!is.null(model_save_name), model_save_name, NULL)
-    )
+    if(chain_hyperthreading){
+        fit <- brms::brm(
+            model, 
+            data = data, 
+            iter = iter, 
+            warmup = warmup,
+            chains = chains, 
+            cores = chains,
+            backend = "cmdstanr",
+            threads = threading(max_threads),
+            control = control_list,
+            future = future_arg, 
+            save_model = ifelse(!is.null(model_save_name), model_save_name, NULL)
+        )
+    }
+    else {
+        fit <- brms::brm(
+            model, 
+            data = data, 
+            iter = iter, 
+            warmup = warmup,
+            chains = chains, 
+            cores = chains,
+            control = control_list,
+            future = future_arg, 
+            save_model = ifelse(!is.null(model_save_name), model_save_name, NULL)
+        )
+    }
     
     run_time <- difftime(Sys.time(), start_time, units = "hours")
     results_list[["run_time"]] <- run_time

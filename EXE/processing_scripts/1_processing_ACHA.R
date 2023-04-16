@@ -4,7 +4,8 @@ library(haven)
 library(tidyverse)
 
 # File containing all functions needed to process and clean data used in project
-source('~/Desktop/grad_mh/project_config.R')
+HOME <- Sys.getenv('HOME')
+source(glue('{HOME}/grad_mh/project_config.R'))
 sapply(list.files(R_DIR, full.names = TRUE), source)
 
 # 2008 - 2011 data 

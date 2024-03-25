@@ -1,3 +1,4 @@
+# Note that this environment file may not work depending on chipsets
 name: grad-mh
 channels:
   - conda-forge

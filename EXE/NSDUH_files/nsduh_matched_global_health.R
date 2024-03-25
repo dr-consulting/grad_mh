@@ -49,7 +49,7 @@ brms_fit <- brm(
     prior = priors_config,
     iter = 7500, 
     warmup = 5000, 
-    control = list(adapt_delta = .99), 
+    control = list(adapt_delta = .95), 
     cores = 3, 
     chains = 3
 )

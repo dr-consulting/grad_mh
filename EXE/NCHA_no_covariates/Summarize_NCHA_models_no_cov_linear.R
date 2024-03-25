@@ -145,6 +145,16 @@ for(yvar in names(yvars)){
             dpi = 600
         )
         
+        ggsave(
+            plotlist[[yvar]],
+            filename = "{PLOT_OUTPUT}/ACHA-NCHA_{yvar}_no_cov_linear_summary_plot_{max_y}.eps" %>% glue(), 
+            device = "eps", 
+            units = "in", 
+            height = 5,
+            width = 9,
+            dpi = 600
+        )
+        
         # Create summary table of observed and fitted effects
         create_bin_summary_table(data, plot_df, yvar = var_name) %>% 
             write.csv("{SUMMARY_OUTPUT}/ACHA-NCHA_{yvar}_no_cov_linear_summary_stats_{VERSION}.csv" %>% glue(), row.names = FALSE)

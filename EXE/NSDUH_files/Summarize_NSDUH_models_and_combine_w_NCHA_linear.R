@@ -3,6 +3,8 @@ library(modelr)
 library(tidybayes)
 library(tidyverse)
 library(glue)
+library(Cairo)
+
 
 BASE_FILE <- '~/Desktop/grad_mh/project_config.R'
 DATA_VERSION <- "2023-01-15"
@@ -35,10 +37,16 @@ covariates <- c(
 
 plotlist <- list()
 
-color_palette <- c('black', analogous_palette[1:2])
+# color_palette <- c('black', analogous_palette[1:2])
+# names(color_palette) <- c('Fitted All Adults', 'Fitted ACHA-NCHA', 'Fitted Matched Adults')
+# 
+# fill_palette <- c("#C2CCDD", "#C8C1D8")
+# names(fill_palette) <- c('Fitted ACHA-NCHA', 'Fitted Matched Adults')
+
+color_palette <- c('#324961', analogous_palette[1], '#AD0037')
 names(color_palette) <- c('Fitted All Adults', 'Fitted ACHA-NCHA', 'Fitted Matched Adults')
 
-fill_palette <- c("#C2CCDD", "#C8C1D8")
+fill_palette <- c("#C2CCDD", "#e2979a")
 names(fill_palette) <- c('Fitted ACHA-NCHA', 'Fitted Matched Adults')
 
 for(yvar in names(yvars)){
@@ -119,7 +127,7 @@ for(yvar in names(yvars)){
         if(grepl('Matched', yvar)) {
             plt <- plt + 
                 geom_ribbon(aes(ymax=perc_ub, ymin=perc_lb, 
-                                fill='Fitted Matched Adults')) +
+                                fill='Fitted Matched Adults'), alpha=.5) +
                 geom_line(lwd = 1.25, aes(color = 'Fitted Matched Adults')) +
                 scale_fill_manual(values = fill_palette)
             
@@ -181,7 +189,8 @@ for(var in base_vars) {
             # Add a layer for the "All adults population"
             geom_line(data=plotlist[[min(list_pos)]]$data, aes(color='Fitted All Adults'), lwd=1.25) +
             # Add a layer with credibility interval for the ACHA-NCHA results
-            geom_ribbon(data = acha_plot_df, aes(x = c_Time, ymin = perc_lb, ymax = perc_ub, fill='Fitted ACHA-NCHA')) +
+            geom_ribbon(data = acha_plot_df, aes(x = c_Time, ymin = perc_lb, ymax = perc_ub, fill='Fitted ACHA-NCHA'), 
+                        alpha=.5) +
             geom_line(data = acha_plot_df, aes(x = c_Time, y = perc, color='Fitted ACHA-NCHA'), lwd = 1.25) +
             # Override existing fill aesthetic to include just the HDIs
             scale_fill_manual(values=fill_palette) +
@@ -210,7 +219,7 @@ for(var in base_vars) {
         ggsave(
             tmp_plot,
             filename = "{PLOT_OUTPUT}/NSDUH_{var}_linear_combined_summary_plot_{VERSION}.eps" %>% glue(), 
-            device = "eps", 
+            device = cairo_ps, 
             units = "in", 
             height = 8,
             width = 11,

@@ -1,12 +1,12 @@
 # Filters and processes the grad student data from ACHA-NCHA
 
 # Be sure to update the data version to the appropriate date before running
-DATA_VERSION <- "2023-01-15"
+DATA_VERSION <- "2023-04-15"
 
 library(glue)
 library(tidyverse)
 library(haven)
-source('~/Desktop/grad_mh/project_config.R')
+source('~/grad_mh/project_config.R')
 sapply(list.files(R_DIR, full.names = TRUE), source)
 load('{DATA_DIR}/ACHA-II/acha_study_data_{DATA_VERSION}.RData' %>% glue())
 

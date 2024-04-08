@@ -28,7 +28,7 @@ if(!require(cmdstanr)){
 library(glue)
 library(magrittr)
 
-LOCAL_REPO <- '~/grad_mh'
+LOCAL_REPO <- '~/Desktop/grad_mh'
 DATA_DIR <- paste0(LOCAL_REPO, '/', 'data')
 R_DIR <- paste0(LOCAL_REPO, '/', 'R')
 MAPS_DIR <- paste0(LOCAL_REPO, '/', 'data_maps')

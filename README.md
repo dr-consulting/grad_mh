@@ -70,3 +70,7 @@ Executing the command should result in fitting the model and storing its outputs
 These models can take a long time to fit given the sample sizes involved. This scripts were designed to be executed on a single multi-core machine - the default settings require 18 cores (3 chains with computations hyper-threaded on 6 cores each). The computer used had 32 cores available, which is uncommon for most users. You can prevent this additional parallelization (at the cost of runtime) if it is not well-suited for your computer. 
 
 To prevent chain hyperthreading, set `chain_hyperthreading=FALSE` in the model fit wrapper function in the model `.R`. Alternatively, you can lower the number of cores used to distribute within-chain computations by setting the parameter `max_threads=<something lower that 6>`. So if you had 12 cores and were okay with the model fitting process using all 12 you could provide `max_threads=4`. The difference on my Linux home workstation between using 3 cores (1 core for each chain + single-threaded computations) and 18 cores (1 core for each chain + 6 cores per chain for parallel computation) is the difference between 7.5 hours and 1.5 hours. (If you are unsure how many cores you have access to run `parallel::detectCores()` in an `R` terminal).
+
+## Toy Example
+
+Because we are unable to provide a copy of the original data, we have created a toy example (see the `toy_example/`) that allows users to more directly evaluate the model code functionality.

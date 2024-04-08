@@ -50,9 +50,9 @@ After all the data required have been produced, navigate to the `grad_mh/EXE` fo
 ```
 | - grad_mh/
     | - EXE/
-    | - NCHA_no_covariates/
-        | - my_model_script.R
-        | - my_other_model_script.R
+        | - NCHA_no_covariates/
+            | - my_model_script.R
+            | - my_other_model_script.R
 ```
 
 Open the file you want to fit and change the `BASE_FILE` variable [at the top to point](https://github.com/dr-consulting/grad_mh/blob/e5d3b725a72d5985e3f2febf1741d0f285273c95/EXE/NCHA_no_covariates/ncha_anxiety_dx_no_cov.R#L4) to the correct location for the local `project_config.R` file. 
